@@ -1,5 +1,5 @@
-local Promise = require(script.Parent.Parent.Promise)
-local t = require(script.Parent.Parent.t)
+local Promise = require(script.Parent.Promise)
+local t = require(script.Parent.t)
 local Document = require(script.Parent.Document)
 local stackSkipAssert = require(script.Parent.stackSkipAssert).stackSkipAssert
 local getTime = require(script.Parent.getTime).getTime

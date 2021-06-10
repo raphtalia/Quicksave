@@ -1,0 +1,14 @@
+{
+	"name": "Quicksave - Testing",
+	"tree": {
+		"$className": "DataModel",
+
+		"ServerStorage": {
+			"$className": "ServerStorage",
+
+			"Quicksave": {
+				"$path": "."
+			}
+		}
+	}
+}

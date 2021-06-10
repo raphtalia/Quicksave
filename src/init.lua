@@ -1,5 +1,5 @@
-local t = require(script.Parent.t)
-local Promise = require(script.Parent.Promise)
+local t = require(script.t)
+local Promise = require(script.Promise)
 local Collection = require(script.Collection)
 local Error = require(script.Error)
 

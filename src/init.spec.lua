@@ -2,9 +2,9 @@ local SUPER_SPEED = true
 
 local HttpService = game:GetService("HttpService")
 
-local t = require(script.Parent.Parent.t)
+local t = require(script.Parent.t)
 
-local MockDataStoreConstants = require(script.Parent.Parent.MockDataStoreService.MockDataStoreService.MockDataStoreConstants)
+local MockDataStoreConstants = require(script.Parent.MockDataStoreService.MockDataStoreService.MockDataStoreConstants)
 
 if SUPER_SPEED then
 	MockDataStoreConstants.WRITE_COOLDOWN = 0
@@ -30,7 +30,7 @@ local progressTime do
 	end
 end
 
-local MockDataStoreService = require(script.Parent.Parent.MockDataStoreService)
+local MockDataStoreService = require(script.Parent.MockDataStoreService)
 
 MockDataStoreService:ImportFromJSON([[
 	{

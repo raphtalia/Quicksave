@@ -1,5 +1,5 @@
-local DataStoreService = require(script.Parent.Parent.Parent.MockDataStoreService)
-local Promise = require(script.Parent.Parent.Parent.Promise)
+local DataStoreService = require(script.Parent.Parent.MockDataStoreService)
+local Promise = require(script.Parent.Parent.Promise)
 local Error = require(script.Parent.Parent.Error)
 local RunService = game:GetService("RunService")
 

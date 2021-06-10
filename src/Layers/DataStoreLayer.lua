@@ -1,4 +1,4 @@
-local DataStoreService = require(script.Parent.Parent.Parent.MockDataStoreService)
+local DataStoreService = require(script.Parent.Parent.MockDataStoreService)
 
 local DataStoreLayer = {
     _dataStores = {};

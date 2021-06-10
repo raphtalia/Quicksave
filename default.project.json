@@ -1,6 +1,16 @@
 {
 	"name": "Quicksave",
 	"tree": {
-		"$path": "src"
+		"$path": "src",
+
+		"t": {
+			"$path": "modules/t/lib/"
+		},
+		"Promise": {
+			"$path": "./modules/Promise/lib/"
+		},
+		"MockDataStoreService": {
+			"$path": "./modules/MockDataStoreService/lib"
+		}
 	}
 }

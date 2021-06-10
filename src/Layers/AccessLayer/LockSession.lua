@@ -1,6 +1,6 @@
 local MigrationLayer = require(script.Parent.Parent.MigrationLayer)
 local Error = require(script.Parent.Parent.Parent.Error)
-local Promise = require(script.Parent.Parent.Parent.Parent.Promise)
+local Promise = require(script.Parent.Parent.Parent.Promise)
 local getTime = require(script.Parent.Parent.Parent.getTime).getTime
 
 local HttpService = game:GetService("HttpService")
