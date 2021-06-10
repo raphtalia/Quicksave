@@ -63,6 +63,16 @@ function Collection:getDocument(name)
 	return self._activeDocuments[name]:readyPromise()
 end
 
+function Collection:getActiveDocuments()
+	local documents = {}
+
+	for _,document in ipairs(self._activeDocuments) do
+		table.insert(documents, document)
+	end
+
+	return documents
+end
+
 function Collection:getLatestMigrationVersion()
 	return #self._migrations
 end

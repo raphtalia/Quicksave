@@ -5,17 +5,17 @@ DocumentData.__index = DocumentData
 
 function DocumentData.new(options)
 	return setmetatable({
+		isLoaded = false;
+		isClosed = false;
 		_lockSession = options.lockSession;
 		_readOnlyData = options.readOnlyData;
 		_collection = options.collection;
 		_currentData = nil;
-		_dataLoaded = false;
-		_closed = false;
 	}, DocumentData)
 end
 
 function DocumentData:isClosed()
-	return self._closed
+	return self.isClosed
 end
 
 function DocumentData:_load()
@@ -27,7 +27,7 @@ function DocumentData:_load()
 end
 
 function DocumentData:read()
-	if self._dataLoaded == false then
+	if self.isLoaded == false then
 		local newData = self:_load()
 
 		if newData == nil then
@@ -37,7 +37,7 @@ function DocumentData:read()
 		assert(self._collection:validateData(newData))
 
 		self._currentData = newData
-		self._dataLoaded = true
+		self.isLoaded = true
 	end
 
 	return self._currentData
@@ -60,7 +60,7 @@ function DocumentData:save()
 end
 
 function DocumentData:close()
-	self._closed = true
+	self.isClosed = true
 
 	if self._lockSession then
 		self._lockSession:unlockWithFinalData(self._currentData)
