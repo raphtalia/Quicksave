@@ -1,3 +1,18 @@
+local function copyDeep(dictionary)
+	-- https://github.com/Reselim/Quicksave/commit/b703fc4928c99927409f78900e62b20809b1a06a
+	local new = {}
+
+	for key, value in pairs(dictionary) do
+		if type(value) == "table" then
+			new[key] = copyDeep(value)
+		else
+			new[key] = value
+		end
+	end
+
+	return new
+end
+
 local DocumentData = {}
 DocumentData.__index = DocumentData
 
@@ -7,7 +22,7 @@ function DocumentData.new(options)
 	return setmetatable({
 		isLoaded = false;
 		isClosed = false;
-		isUnsaved = false;
+		isModified = false;
 		_lockSession = options.lockSession;
 		_readOnlyData = options.readOnlyData;
 		_collection = options.collection;
@@ -29,6 +44,8 @@ function DocumentData:read()
 
 		if newData == nil then
 			newData = self._collection.defaultData or {}
+			local defaultData = self._collection.defaultData
+			newData = defaultData and copyDeep(defaultData) or {}
 		end
 
 		assert(self._collection:validateData(newData))
@@ -46,7 +63,7 @@ function DocumentData:write(value)
 	end
 
 	self._currentData = value
-	self.isUnsaved = true
+	self.isModified = true
 end
 
 function DocumentData:save()
@@ -55,7 +72,7 @@ function DocumentData:save()
 	end
 
 	self._lockSession:write(self._currentData)
-	self.isUnsaved = false
+	self.isModified = false
 end
 
 function DocumentData:close()

@@ -30,7 +30,7 @@ game:BindToClose(function()
 
 	for _,collection in pairs(Quicksave._collections) do
 		for _,document in ipairs(collection:getActiveDocuments()) do
-			if document:isUnsaved() then
+			if document:isModified() then
 				table.insert(promises, document:close())
 			end
 		end

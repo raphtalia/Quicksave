@@ -101,7 +101,6 @@ return function()
 			local collection = Quicksave.getCollection("collectionName")
 
 			expect(collection).to.be.ok()
-			print(collection.name)
 			expect(collection.name).to.equal("collectionName")
 			expect(Quicksave.getCollection("collectionName")).to.equal(collection)
 		end)
@@ -272,6 +271,43 @@ return function()
 			expect(function()
 				document:set("key", { nested = setmetatable({}, {}) })
 			end).to.throw()
+		end)
+
+		it("should mark as unsaved after edits", function()
+			expect(document:isModified()).to.equal(false)
+
+			document:set("foo", "bar")
+
+			expect(document:isModified()).to.equal(true)
+		end)
+
+		it("should mark as saved after saving", function()
+			document:set("foo", "bar")
+
+			progressTime(7)
+
+			document:save():expect()
+
+			progressTime(7)
+
+			expect(document:isModified()).to.equal(false)
+		end)
+
+		it("should not mark as unsaved if new value is identical to last", function()
+			document:set("foo", document:get("foo"))
+
+			expect(document:isModified()).to.equal(false)
+		end)
+
+		it("should have no data by default", function()
+			local isEmpty = true
+
+			for _ in pairs(document._data._currentData) do
+				isEmpty = false
+				break
+			end
+
+			expect(isEmpty).to.be.equal(true)
 		end)
 
 		describe("Document", function()

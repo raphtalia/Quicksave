@@ -1,7 +1,9 @@
 local SUPPORTED_TYPES = {
+    "nil",
     "string",
     "boolean",
     "number",
+    "table",
 
     "Vector2",
     "Vector3",

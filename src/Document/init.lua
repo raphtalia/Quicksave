@@ -28,7 +28,7 @@ function Document.new(collection, name)
 
 		repeat
 			Promise.delay(AUTOSAVE_INTERVAL):andThenCall(function()
-				if document.isUnsaved and tick() - document.lastSaved > AUTOSAVE_INTERVAL then
+				if document.isModified and tick() - document.lastSaved > AUTOSAVE_INTERVAL then
 					return document:save()
 				end
 			end):await()
@@ -88,8 +88,10 @@ function Document:set(key, value)
 	stackSkipAssert(self.collection:validateKey(key, value))
 
 	local current = self._data:read()
-	current[key] = value
-	self._data:write(current)
+	if current[key] ~= value then
+		current[key] = value
+		self._data:write(current)
+	end
 end
 
 function Document:save()
@@ -122,8 +124,8 @@ function Document:isClosed()
 	return self._data.isClosed
 end
 
-function Document:isUnsaved()
-	return self._data.isUnsaved
+function Document:isModified()
+	return self._data.isModified
 end
 
 return Document
