@@ -1,3 +1,5 @@
+--# selene: allow(shadowing)
+
 local SUPER_SPEED = true
 
 local HttpService = game:GetService("HttpService")
@@ -74,7 +76,7 @@ return function()
 
 	describe("Quicksave", function()
 		it("should be able to create collections", function()
-			local collection = Quicksave.createCollection("collectionName", {
+			Quicksave.createCollection("collectionName", {
 				schema = {
 					foo = t.optional(t.string);
 					key = t.optional(t.string);
