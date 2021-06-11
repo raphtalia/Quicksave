@@ -28,7 +28,7 @@ function Document.new(collection, name)
 
 		repeat
 			Promise.delay(AUTOSAVE_INTERVAL):andThenCall(function()
-				if document.isModified and tick() - document.lastSaved > AUTOSAVE_INTERVAL then
+				if document.isModified() and tick() - document.lastSaved > AUTOSAVE_INTERVAL then
 					return document:save()
 				end
 			end):await()
