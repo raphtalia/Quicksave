@@ -25,4 +25,16 @@ function Quicksave.getCollection(name)
 	return Quicksave._collections[name] or error(("Collection %q hasn't been created yet!"):format(name))
 end
 
+game:BindToClose(function()
+	local promises = {}
+
+	for _,collection in pairs(Quicksave._collections) do
+		for _,document in ipairs(collection:getActiveDocuments()) do
+			table.insert(promises, document:close())
+		end
+	end
+
+	Promise.all(promises):awaitStatus()
+end)
+
 return Quicksave
