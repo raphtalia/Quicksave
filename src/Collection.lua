@@ -67,7 +67,10 @@ function Collection:getActiveDocuments()
 	local documents = {}
 
 	for _,document in pairs(self._activeDocuments) do
-		table.insert(documents, document)
+		if not document:isClosed() then
+			-- Documents already closed can remain
+			table.insert(documents, document)
+		end
 	end
 
 	return documents

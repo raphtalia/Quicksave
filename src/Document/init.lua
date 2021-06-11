@@ -2,9 +2,11 @@ local AUTOSAVE_INTERVAL = game:GetService("RunService"):IsStudio() and 30 or 5 *
 
 local Promise = require(script.Parent.Promise)
 local AccessLayer = require(script.Parent.Layers.AccessLayer)
-local DocumentData = require(script.Parent.DocumentData)
+local DocumentData = require(script.DocumentData)
 local Error = require(script.Parent.Error)
 local stackSkipAssert = require(script.Parent.stackSkipAssert).stackSkipAssert
+
+local validateValue = require(script.validateValue)
 
 local Document = {}
 Document.__index = Document
@@ -26,7 +28,7 @@ function Document.new(collection, name)
 
 		repeat
 			Promise.delay(AUTOSAVE_INTERVAL):andThenCall(function()
-				if tick() - document.lastSaved > AUTOSAVE_INTERVAL then
+				if document.isUnsaved and tick() - document.lastSaved > AUTOSAVE_INTERVAL then
 					return document:save()
 				end
 			end):await()
@@ -81,6 +83,8 @@ function Document:set(key, value)
 
 	key = tostring(key)
 
+	stackSkipAssert(validateValue(value))
+
 	stackSkipAssert(self.collection:validateKey(key, value))
 
 	local current = self._data:read()
@@ -116,6 +120,10 @@ end
 
 function Document:isClosed()
 	return self._data.isClosed
+end
+
+function Document:isUnsaved()
+	return self._data.isUnsaved
 end
 
 return Document

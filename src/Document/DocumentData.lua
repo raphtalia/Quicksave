@@ -7,6 +7,7 @@ function DocumentData.new(options)
 	return setmetatable({
 		isLoaded = false;
 		isClosed = false;
+		isUnsaved = false;
 		_lockSession = options.lockSession;
 		_readOnlyData = options.readOnlyData;
 		_collection = options.collection;
@@ -45,6 +46,7 @@ function DocumentData:write(value)
 	end
 
 	self._currentData = value
+	self.isUnsaved = true
 end
 
 function DocumentData:save()
@@ -53,6 +55,7 @@ function DocumentData:save()
 	end
 
 	self._lockSession:write(self._currentData)
+	self.isUnsaved = false
 end
 
 function DocumentData:close()
