@@ -1,7 +1,3 @@
-# Looking for new maintainer
-I never ended up using Quicksave in a game, and have no need for it moving forward, so it's hard to justify spending personal time maintaining a library I don't use. I think it was a nice experiment, but I would probably do things differently if I were to write a new saving system today. Specifically, the tight coupling between layers makes writing tests really hard, because the layers can't be constructed in a vacuum. If you want to take over Quicksave, finish it out and maintaing it moving forward, let me know in an issue so I can redirect newcomers to this repo to your fork!
-
-
 # Quicksave
 
 DataStore abstraction library that offers:
@@ -39,7 +35,7 @@ Documents have keys which you can read or write to individually. You can only re
 
 Data within a document is automatically compressed which allows you to have larger documents.
 
-Reading from or writing to a document does not yield. By the time you have a reference to a document, all of its data has loaded. Documents are automatically saved on a periodic interval [NYI] and saved when the game server closes [NYI]. You can also manually save a document at any time.
+Reading from or writing to a document does not yield. By the time you have a reference to a document, all of its data has loaded. Documents are automatically saved on a periodic interval and saved when the game server closes. You can also manually save a document at any time.
 
 Due to DataStore throttling, saving is not instant. Documents will only ever save their latest data. If the save is throttled and you call save multiple times, the document will only save once with the latest data.
 
@@ -50,7 +46,6 @@ Once a document has fully closed and become inactive, attempting to open the doc
 ### Migrations
 
 If you ever need to change the structure data in your schema, you can write a migration which can convert existing documents to the current schema. All migrations that ocurred between the current document and the present schema will be run in order.
-
 
 ## Internals
 
@@ -68,7 +63,5 @@ Data flows through the library in this order:
 
 - Write more tests. And more tests. And more tests.
 - Backups
-- Saving on an interval for active documents
-- Saving on game close
 - Easy way to tie documents to players
 - Panic event (if too many datastore operations fail, fire this event)

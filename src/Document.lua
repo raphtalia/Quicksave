@@ -1,3 +1,5 @@
+local AUTOSAVE_INTERVAL = game:GetService("RunService"):IsStudio() and 30 or 5 * 60
+
 local Promise = require(script.Parent.Promise)
 local AccessLayer = require(script.Parent.Layers.AccessLayer)
 local DocumentData = require(script.Parent.DocumentData)
@@ -8,11 +10,30 @@ local Document = {}
 Document.__index = Document
 
 function Document.new(collection, name)
-	return setmetatable({
+	local document = setmetatable({
 		collection = collection;
 		name = name;
+		lastSaved = tick();
 		_data = nil;
 	}, Document)
+
+	--[[
+		We start a separate thread on each document to add some randomness
+		to the timing to avoid ratelimits.
+	]]
+	Promise.delay(1):andThenCall(function()
+		document = document:readyPromise():expect()
+
+		repeat
+			Promise.delay(AUTOSAVE_INTERVAL):andThenCall(function()
+				if tick() - document.lastSaved > AUTOSAVE_INTERVAL then
+					return document:save()
+				end
+			end):await()
+		until document:isClosed()
+	end)
+
+	return document
 end
 
 function Document:readyPromise()
@@ -72,6 +93,7 @@ function Document:save()
 
 	return Promise.new(function(resolve)
 		self._data:save()
+		self.lastSaved = tick()
 		resolve()
 	end)
 end
@@ -81,6 +103,7 @@ function Document:close()
 
 	return Promise.new(function(resolve)
 		self._data:close()
+		self.lastSaved = tick()
 		resolve()
 	end):finally(function()
 		self.collection:_removeDocument(self.name)
