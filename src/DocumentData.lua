@@ -14,10 +14,6 @@ function DocumentData.new(options)
 	}, DocumentData)
 end
 
-function DocumentData:isClosed()
-	return self.isClosed
-end
-
 function DocumentData:_load()
 	if self._lockSession then
 		return self._lockSession:read()

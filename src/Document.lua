@@ -56,7 +56,7 @@ function Document:get(key)
 end
 
 function Document:set(key, value)
-	stackSkipAssert(self._data:isClosed() == false, "Attempt to call :set() on a closed Document")
+	stackSkipAssert(self._data.isClosed == false, "Attempt to call :set() on a closed Document")
 
 	key = tostring(key)
 
@@ -68,7 +68,7 @@ function Document:set(key, value)
 end
 
 function Document:save()
-	stackSkipAssert(self._data:isClosed() == false, "Attempt to call :save() on a closed Document")
+	stackSkipAssert(self._data.isClosed == false, "Attempt to call :save() on a closed Document")
 
 	return Promise.new(function(resolve)
 		self._data:save()
@@ -77,7 +77,7 @@ function Document:save()
 end
 
 function Document:close()
-	stackSkipAssert(self._data:isClosed() == false, "Attempt to call :close() on a closed Document")
+	stackSkipAssert(self._data.isClosed == false, "Attempt to call :close() on a closed Document")
 
 	return Promise.new(function(resolve)
 		self._data:close()
@@ -87,8 +87,12 @@ function Document:close()
 	end)
 end
 
+function Document:isLoaded()
+	return self._data.isLoaded
+end
+
 function Document:isClosed()
-	return self._data:isClosed()
+	return self._data.isClosed
 end
 
 return Document

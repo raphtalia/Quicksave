@@ -5,7 +5,7 @@ local getTime = require(script.Parent.Parent.Parent.getTime).getTime
 
 local HttpService = game:GetService("HttpService")
 
-local LOCK_EXPIRE = 60 * 5
+local LOCK_EXPIRE = 1 --60 * 5
 local WRITE_MAX_INTERVAL = 7
 
 local function consistencyError()

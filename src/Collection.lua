@@ -66,7 +66,7 @@ end
 function Collection:getActiveDocuments()
 	local documents = {}
 
-	for _,document in ipairs(self._activeDocuments) do
+	for _,document in pairs(self._activeDocuments) do
 		table.insert(documents, document)
 	end
 

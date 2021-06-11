@@ -4,13 +4,16 @@
 		"$path": "src",
 
 		"t": {
-			"$path": "modules/t/lib/"
+			"$path": "./modules/t/lib/"
 		},
 		"Promise": {
 			"$path": "./modules/Promise/lib/"
 		},
 		"MockDataStoreService": {
 			"$path": "./modules/MockDataStoreService/lib"
+		},
+		"RbxUtils": {
+			"$path": "./modules/RbxUtils"
 		}
 	}
 }

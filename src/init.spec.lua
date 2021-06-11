@@ -34,16 +34,33 @@ local MockDataStoreService = require(script.Parent.MockDataStoreService)
 
 MockDataStoreService:ImportFromJSON([[
 	{
-		"DataStore": {
-			"playerData": {
-				"_package/eryn.io/quicksave": {
-					"evaera": {"data":"{\"generation\":1,\"data\":{\"lockedAt\":1603680426,\"updatedAt\":1603680426,\"lockId\":\"{614A5286-A137-4598-A3EF-54825220DEDC}\",\"data\":{\"foo\":\"bar\"},\"createdAt\":1603680426}}","scheme":"raw/1"},
-					"locked": {"data":"{\"generation\":1,\"data\":{\"lockedAt\":9999999999,\"updatedAt\":1603680426,\"lockId\":\"{614A5286-A137-4598-A3EF-54825220DEDC}\",\"data\":{\"foo\":\"bar\"},\"createdAt\":1603680426}}","scheme":"raw/1"}
+		"DataStore":{
+			"migrationTests":{
+				"_package/eryn.io/quicksave":{
+					"migrationTest":{
+					"data":"{\"generation\":0,\"data\":{\"lockedAt\":1603680426,\"updatedAt\":1603680426,\"lockId\":\"{614A5286-A137-4598-A3EF-54825220DEDC}\",\"data\":{\"oldKey\":\"foobar\"},\"createdAt\":1603680426}}",
+					"scheme":"raw/1"
+					}
 				}
 			},
-			"migrationTests": {
-				"_package/eryn.io/quicksave": {
-					"migrationTest": {"data":"{\"generation\":0,\"data\":{\"lockedAt\":1603680426,\"updatedAt\":1603680426,\"lockId\":\"{614A5286-A137-4598-A3EF-54825220DEDC}\",\"data\":{\"oldKey\":\"foobar\"},\"createdAt\":1603680426}}","scheme":"raw/1"}
+			"playerData":{
+				"_package/eryn.io/quicksave":{
+					"evaera":{
+					"data":"{\"generation\":1,\"data\":{\"lockedAt\":1603680426,\"updatedAt\":1603680426,\"lockId\":\"{614A5286-A137-4598-A3EF-54825220DEDC}\",\"data\":{\"foo\":\"bar\"},\"createdAt\":1603680426}}",
+					"scheme":"raw/1"
+					},
+					"locked":{
+					"data":"{\"generation\":1,\"data\":{\"lockedAt\":9999999999,\"updatedAt\":1603680426,\"lockId\":\"{614A5286-A137-4598-A3EF-54825220DEDC}\",\"data\":{\"foo\":\"bar\"},\"createdAt\":1603680426}}",
+					"scheme":"raw/1"
+					}
+				}
+			},
+			"jsonTests":{
+				"_package/eryn.io/quicksave":{
+					"jsonTest":{
+					"data":"{\"generation\":0,\"data\":{\"updatedAt\":1623375760,\"data\":{\"v9\":[\"_T\",9,[[\"_T\",10,0,20,0],[\"_T\",10,1,20,0] ] ],\"v13\":[\"_T\",13,\"KeyCode\",\"W\"],\"v12\":[\"_T\",12,1,0,1,0],\"v10\":[\"_T\",10,0,1,0.5],\"v4\":[\"_T\",4,16777215],\"v5\":[\"_T\",5,21],\"v3\":[\"_T\",3,1,2,3,1,0,0,0,1,0,0,0,1],\"v8\":[\"_T\",8,10,10],\"v6\":[\"_T\",6,[[\"_T\",7,0,0],[\"_T\",7,1,0] ] ],\"v2\":[\"_T\",2,1,2,3],\"v7\":[\"_T\",7,0,16711680],\"v1\":[\"_T\",1,1,2],\"v11\":[\"_T\",11,1,1]},\"createdAt\":1623375760}}",
+					"scheme":"raw/1"
+					}
 				}
 			}
 		}
@@ -243,10 +260,6 @@ return function()
 			expect(function()
 				document:set("key", {nested = workspace})
 			end).to.throw()
-
-			expect(function()
-				document:set("key", Vector3.new())
-			end).to.throw()
 		end)
 
 		itSKIP("should disallow tables with metatables from being set", function()
@@ -257,6 +270,65 @@ return function()
 			expect(function()
 				document:set("key", { nested = setmetatable({}, {}) })
 			end).to.throw()
+		end)
+
+		describe("Document", function()
+			Quicksave.createCollection("jsonTests", {
+				schema = {
+					v1 = t.optional(t.Vector2);
+					v2 = t.optional(t.Vector3);
+					v3 = t.optional(t.CFrame);
+					v4 = t.optional(t.Color3);
+					v5 = t.optional(t.BrickColor);
+					v6 = t.optional(t.ColorSequence);
+					v7 = t.optional(t.ColorSequenceKeypoint);
+					v8 = t.optional(t.NumberRange);
+					v9 = t.optional(t.NumberSequence);
+					v10 = t.optional(t.NumberSequenceKeypoint);
+					v11 = t.optional(t.UDim);
+					v12 = t.optional(t.UDim2);
+					v13 = t.optional(t.EnumItem);
+				};
+				defaultData = {};
+			})
+
+			local document
+
+			beforeEach(function()
+				document = Quicksave.getCollection("jsonTests"):getDocument("jsonTest"):expect()
+			end)
+
+			it("should deserialize data", function()
+				expect(typeof(document:get("v1"))).to.be.equal("Vector2")
+				expect(typeof(document:get("v2"))).to.be.equal("Vector3")
+				expect(typeof(document:get("v3"))).to.be.equal("CFrame")
+				expect(typeof(document:get("v4"))).to.be.equal("Color3")
+				expect(typeof(document:get("v5"))).to.be.equal("BrickColor")
+				expect(typeof(document:get("v6"))).to.be.equal("ColorSequence")
+				expect(typeof(document:get("v7"))).to.be.equal("ColorSequenceKeypoint")
+				expect(typeof(document:get("v8"))).to.be.equal("NumberRange")
+				expect(typeof(document:get("v9"))).to.be.equal("NumberSequence")
+				expect(typeof(document:get("v10"))).to.be.equal("NumberSequenceKeypoint")
+				expect(typeof(document:get("v11"))).to.be.equal("UDim")
+				expect(typeof(document:get("v12"))).to.be.equal("UDim2")
+				expect(typeof(document:get("v13"))).to.be.equal("EnumItem")
+			end)
+
+			it("should be able to save, unlock, relock and load the same data", function()
+				document:set("v1", Vector2.new(5, 5))
+
+				progressTime(7)
+
+				document:close():expect()
+
+				progressTime(7)
+
+				local document2 = Quicksave.getCollection("jsonTests"):getDocument("jsonTest"):expect()
+
+				expect(document).to.never.equal(document2)
+
+				expect(document2:get("v1")).to.equal(Vector2.new(5, 5))
+			end)
 		end)
 	end)
 end

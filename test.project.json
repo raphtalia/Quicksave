@@ -3,8 +3,8 @@
 	"tree": {
 		"$className": "DataModel",
 
-		"ServerScriptService": {
-			"$className": "ServerScriptService",
+		"ServerStorage": {
+			"$className": "ServerStorage",
 
 			"Quicksave": {
 				"$path": "."

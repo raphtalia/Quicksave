@@ -1,16 +1,20 @@
-local RetryLayer = require(script.Parent.RetryLayer)
+local JSON = require(script.Parent.Parent.RbxUtils).JSON
 
-local HttpService = game:GetService("HttpService")
+local RetryLayer = require(script.Parent.RetryLayer)
 
 local RawSchemes = require(script.Schemes.raw)
 local CompressedSchemes = require(script.Schemes.compressed)
 
-local MINIMUM_LENGTH_TO_COMPRESS = 1000
+local MINIMUM_COMPRESS_LENGTHS = {
+	Standard = 1000,
+	High = 100000,
+}
 
 local DataLayer = {
 	schemes = {
-		["raw/1"] = RawSchemes["raw/1"];
-		["compressed/1"] = CompressedSchemes["compressed/1"];
+		["raw/1"] = RawSchemes["raw/1"],
+		["compressed/1"] = CompressedSchemes["compressed/1"],
+		["compressed/2"] = CompressedSchemes["compressed/2"],
 	}
 }
 
@@ -25,14 +29,17 @@ function DataLayer._unpack(value)
 		error(("Unknown scheme: %q"):format(scheme))
 	end
 
-	return HttpService:JSONDecode(DataLayer.schemes[scheme].unpack(value.data))
+	return JSON.deserialize(DataLayer.schemes[scheme].unpack(value.data))
 end
 
 function DataLayer._pack(value)
-	value = HttpService:JSONEncode(value)
+	value = JSON.serialize(value)
+	local length = #value
 
 	local scheme
-	if #value > MINIMUM_LENGTH_TO_COMPRESS then
+	if length > MINIMUM_COMPRESS_LENGTHS.High then
+		scheme = "compressed/2"
+	elseif length > MINIMUM_COMPRESS_LENGTHS.Standard then
 		scheme = "compressed/1"
 	else
 		scheme = "raw/1"
@@ -56,6 +63,11 @@ function DataLayer.update(collection, key, callback)
 			return nil
 		end
 	end)
+
+	if decompressed and decompressed.data and decompressed.data.data then
+		-- Deserializes Roblox types
+		decompressed.data.data = JSON.deserializeTypes(decompressed.data.data)
+	end
 
 	return decompressed
 end
