@@ -29,9 +29,19 @@ game:BindToClose(function()
 	local promises = {}
 
 	for _,collection in pairs(Quicksave._collections) do
-		for _,document in ipairs(collection:getActiveDocuments()) do
-			if document:isModified() then
-				table.insert(promises, document:close())
+		for _,document in pairs(collection:getActiveDocuments()) do
+			if document:isDirty() then
+				--[[
+					Check if the document has edits and if it is already in the
+					process of saving.
+				]]
+				if document:isSaving() then
+					table.insert(promises, Promise.fromEvent(document.saved))
+				else
+					if not document:isClosed() then
+						table.insert(promises, document:close())
+					end
+				end
 			end
 		end
 	end

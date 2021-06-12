@@ -1,6 +1,7 @@
 local AUTOSAVE_INTERVAL = game:GetService("RunService"):IsStudio() and 30 or 5 * 60
 
 local Promise = require(script.Parent.Promise)
+local OSModules = require(script.Parent.OSModules)
 local AccessLayer = require(script.Parent.Layers.AccessLayer)
 local DocumentData = require(script.DocumentData)
 local Error = require(script.Parent.Error)
@@ -13,10 +14,16 @@ Document.__index = Document
 
 function Document.new(collection, name)
 	local document = setmetatable({
-		collection = collection;
-		name = name;
-		lastSaved = tick();
-		_data = nil;
+		collection = collection,
+		name = name,
+		lastSaved = tick(),
+
+		saved = OSModules.Event(),
+		closed = OSModules.Event(),
+		changed = OSModules.Event(),
+
+		_data = nil,
+		_isSaving = false,
 	}, Document)
 
 	--[[
@@ -28,7 +35,7 @@ function Document.new(collection, name)
 
 		repeat
 			Promise.delay(AUTOSAVE_INTERVAL):andThenCall(function()
-				if document.isModified() and tick() - document.lastSaved > AUTOSAVE_INTERVAL then
+				if document.isDirty() and tick() - document.lastSaved > AUTOSAVE_INTERVAL then
 					return document:save()
 				end
 			end):await()
@@ -88,9 +95,12 @@ function Document:set(key, value)
 	stackSkipAssert(self.collection:validateKey(key, value))
 
 	local current = self._data:read()
-	if current[key] ~= value then
+	local currentValue = current[key]
+	if currentValue ~= value then
 		current[key] = value
 		self._data:write(current)
+
+		self.changed:Fire(key, value, currentValue)
 	end
 end
 
@@ -101,6 +111,9 @@ function Document:save()
 		self._data:save()
 		self.lastSaved = tick()
 		resolve()
+	end):finally(function(status)
+		self._isSaving = false
+		self.saved:Fire(status)
 	end)
 end
 
@@ -111,8 +124,14 @@ function Document:close()
 		self._data:close()
 		self.lastSaved = tick()
 		resolve()
-	end):finally(function()
+	end):finally(function(status)
 		self.collection:_removeDocument(self.name)
+		self._isSaving = false
+		self.saved:Fire(status)
+
+		if status then
+			self.closed:Fire()
+		end
 	end)
 end
 
@@ -124,8 +143,12 @@ function Document:isClosed()
 	return self._data.isClosed
 end
 
-function Document:isModified()
-	return self._data.isModified
+function Document:isDirty()
+	return self._data.isDirty
+end
+
+function Document:isSaving()
+	return self._isSaving
 end
 
 return Document

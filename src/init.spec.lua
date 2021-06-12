@@ -138,6 +138,13 @@ return function()
 			document = Quicksave.getCollection("playerData"):getDocument(guid):expect()
 		end)
 
+		afterEach(function()
+			if not document:isClosed() then
+				print(document)
+				document:close()
+			end
+		end)
+
 		it("should not be able to load a locked document", function()
 			local ok, err = Quicksave.getCollection("playerData"):getDocument("locked"):await()
 
@@ -274,11 +281,11 @@ return function()
 		end)
 
 		it("should mark as unsaved after edits", function()
-			expect(document:isModified()).to.equal(false)
+			expect(document:isDirty()).to.equal(false)
 
 			document:set("foo", "bar")
 
-			expect(document:isModified()).to.equal(true)
+			expect(document:isDirty()).to.equal(true)
 		end)
 
 		it("should mark as saved after saving", function()
@@ -290,13 +297,13 @@ return function()
 
 			progressTime(7)
 
-			expect(document:isModified()).to.equal(false)
+			expect(document:isDirty()).to.equal(false)
 		end)
 
 		it("should not mark as unsaved if new value is identical to last", function()
 			document:set("foo", document:get("foo"))
 
-			expect(document:isModified()).to.equal(false)
+			expect(document:isDirty()).to.equal(false)
 		end)
 
 		it("should have no data by default", function()

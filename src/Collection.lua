@@ -64,16 +64,7 @@ function Collection:getDocument(name)
 end
 
 function Collection:getActiveDocuments()
-	local documents = {}
-
-	for _,document in pairs(self._activeDocuments) do
-		if not document:isClosed() then
-			-- Documents already closed can remain
-			table.insert(documents, document)
-		end
-	end
-
-	return documents
+	return self._activeDocuments
 end
 
 function Collection:getLatestMigrationVersion()

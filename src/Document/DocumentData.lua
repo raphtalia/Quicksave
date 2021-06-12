@@ -20,13 +20,14 @@ DocumentData.__index = DocumentData
 
 function DocumentData.new(options)
 	return setmetatable({
-		isLoaded = false;
-		isClosed = false;
-		isModified = false;
-		_lockSession = options.lockSession;
-		_readOnlyData = options.readOnlyData;
-		_collection = options.collection;
-		_currentData = nil;
+		isLoaded = false,
+		isClosed = false,
+		isDirty = false,
+
+		_lockSession = options.lockSession,
+		_readOnlyData = options.readOnlyData,
+		_collection = options.collection,
+		_currentData = nil,
 	}, DocumentData)
 end
 
@@ -63,7 +64,7 @@ function DocumentData:write(value)
 	end
 
 	self._currentData = value
-	self.isModified = true
+	self.isDirty = true
 end
 
 function DocumentData:save()
@@ -72,15 +73,14 @@ function DocumentData:save()
 	end
 
 	self._lockSession:write(self._currentData)
-	self.isModified = false
+	self.isDirty = false
 end
 
 function DocumentData:close()
-	self.isClosed = true
-
 	if self._lockSession then
 		self._lockSession:unlockWithFinalData(self._currentData)
 	end
+	self.isClosed = true
 end
 
 return DocumentData
