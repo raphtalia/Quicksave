@@ -1,10 +1,10 @@
+local Constants = require(script.Parent.QuicksaveConstants)
+
 local Promise = require(script.Parent.Promise)
 local t = require(script.Parent.t)
 local Document = require(script.Parent.Document)
 local stackSkipAssert = require(script.Parent.stackSkipAssert).stackSkipAssert
 local getTime = require(script.Parent.getTime).getTime
-
-local DOCUMENT_COOLDOWN = 7
 
 local Collection = {}
 Collection.__index = Collection
@@ -40,7 +40,7 @@ function Collection:getDocument(name)
 	name = tostring(name)
 
 	if self._justClosedDocuments[name] then
-		local waitTime = DOCUMENT_COOLDOWN - (getTime() - self._justClosedDocuments[name])
+		local waitTime = Constants.DOCUMENT_COOLDOWN - (getTime() - self._justClosedDocuments[name])
 
 		if waitTime > 0 then
 			warn(("Document %q in %q was recently closed. Your getDocument call will be delayed by %.1f seconds."):format(
@@ -91,7 +91,7 @@ function Collection:_removeDocument(name)
 	self._justClosedDocuments[name] = getTime()
 	self._activeDocuments[name] = nil
 
-	Promise.delay(DOCUMENT_COOLDOWN):andThen(function()
+	Promise.delay(Constants.DOCUMENT_COOLDOWN):andThen(function()
 		self._justClosedDocuments[name] = nil
 	end)
 end

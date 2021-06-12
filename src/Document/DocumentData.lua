@@ -21,7 +21,6 @@ DocumentData.__index = DocumentData
 function DocumentData.new(options)
 	return setmetatable({
 		isLoaded = false,
-		isClosed = false,
 		isDirty = false,
 
 		_lockSession = options.lockSession,
@@ -80,7 +79,10 @@ function DocumentData:close()
 	if self._lockSession then
 		self._lockSession:unlockWithFinalData(self._currentData)
 	end
-	self.isClosed = true
+end
+
+function DocumentData:getLastWriteElapsedTime()
+	return self._lockSession:getLastWriteElapsedTime()
 end
 
 return DocumentData

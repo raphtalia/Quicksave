@@ -1,14 +1,11 @@
+local Constants = require(script.Parent.Parent.QuicksaveConstants)
+
 local JSON = require(script.Parent.Parent.RbxUtils).JSON
 
 local RetryLayer = require(script.Parent.RetryLayer)
 
 local RawSchemes = require(script.Schemes.raw)
 local CompressedSchemes = require(script.Schemes.compressed)
-
-local MINIMUM_COMPRESS_LENGTHS = {
-	Standard = 1000,
-	High = 100000,
-}
 
 local DataLayer = {
 	schemes = {
@@ -36,13 +33,13 @@ function DataLayer._pack(value)
 	value = JSON.serialize(value)
 	local length = #value
 
-	local scheme
-	if length > MINIMUM_COMPRESS_LENGTHS.High then
-		scheme = "compressed/2"
-	elseif length > MINIMUM_COMPRESS_LENGTHS.Standard then
-		scheme = "compressed/1"
-	else
-		scheme = "raw/1"
+	local scheme = "raw/1"
+	if Constants.COMPRESSION_ENABLED then
+		if length > Constants.MINIMUM_COMPRESSION_LENGTH.High then
+			scheme = "compressed/2"
+		elseif length > Constants.MINIMUM_COMPRESSION_LENGTH.Standard then
+			scheme = "compressed/1"
+		end
 	end
 
 	return {

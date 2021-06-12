@@ -1,14 +1,18 @@
+local Constants = require(script.QuicksaveConstants)
+
 local t = require(script.t)
 local Promise = require(script.Promise)
 local Collection = require(script.Collection)
 local Error = require(script.Error)
 
 local Quicksave = {
-	t = t;
-	Promise = Promise;
-	Error = Error;
+	Constants = Constants,
 
-	_collections = {};
+	t = t,
+	Promise = Promise,
+	Error = Error,
+
+	_collections = {},
 }
 
 function Quicksave.createCollection(name, options)

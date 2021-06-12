@@ -1,3 +1,5 @@
+local Constants = require(script.Parent.Parent.QuicksaveConstants)
+
 local ThrottleLayer = require(script.Parent.ThrottleLayer)
 local Error = require(script.Parent.Parent.Error)
 
@@ -6,7 +8,7 @@ local RetryLayer = {}
 function RetryLayer._retry(callback, ...)
 	local attempts = 0
 
-	while attempts < 5 do
+	while attempts < Constants.MAX_RETRIES do
 		attempts = attempts + 1
 
 		local ok, value = pcall(callback, ...)
@@ -15,7 +17,7 @@ function RetryLayer._retry(callback, ...)
 			return value
 		end
 
-		if attempts < 5 then
+		if attempts < Constants.MAX_RETRIES then
 			warn(("[Quicksave] DataStore operation failed. Retrying...\nError:\n%s"):format(
 				tostring(value)
 			))
@@ -23,7 +25,7 @@ function RetryLayer._retry(callback, ...)
 			error(Error.new({
 				kind = Error.Kind.DataStoreError,
 				error = value,
-				context = "Failed after 5 retries."
+				context = ("Failed after %d retries."):format(Constants.MAX_RETRIES)
 			}))
 		end
 	end

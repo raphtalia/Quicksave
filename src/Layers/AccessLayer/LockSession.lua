@@ -1,12 +1,11 @@
+local Constants = require(script.Parent.Parent.Parent.QuicksaveConstants)
+
 local MigrationLayer = require(script.Parent.Parent.MigrationLayer)
 local Error = require(script.Parent.Parent.Parent.Error)
 local Promise = require(script.Parent.Parent.Parent.Promise)
 local getTime = require(script.Parent.Parent.Parent.getTime).getTime
 
 local HttpService = game:GetService("HttpService")
-
-local LOCK_EXPIRE = game:GetService("RunService"):IsStudio() and 5 or 60 * 5
-local WRITE_MAX_INTERVAL = 7
 
 local function consistencyError()
 	return Error.new({
@@ -48,7 +47,7 @@ function LockSession:lock()
 			updatedAt = os.time();
 		}
 
-		if type(value.lockedAt) == "number" and os.time() - value.lockedAt < LOCK_EXPIRE then
+		if type(value.lockedAt) == "number" and os.time() - value.lockedAt < Constants.LOCK_EXPIRE then
 			success = false
 			return nil
 		end
@@ -95,12 +94,12 @@ function LockSession:write(data)
 	end
 
 
-	if getTime() - self._lastWrite < WRITE_MAX_INTERVAL then
+	if getTime() - self._lastWrite < Constants.WRITE_MAX_INTERVAL then
 		warn("Queueing key =", self.collection, self.key)
 		self._pendingData = data
 
 		if not self._pendingPromise then
-			self._pendingPromise = Promise.delay(WRITE_MAX_INTERVAL - (getTime() - self._lastWrite)):andThen(function()
+			self._pendingPromise = Promise.delay(Constants.WRITE_MAX_INTERVAL - (getTime() - self._lastWrite)):andThen(function()
 				self._pendingPromise = nil
 
 				if self._pendingClose then
@@ -140,7 +139,6 @@ end
 
 function LockSession:read()
 	self:_ensureLocked()
-
 	return self._value.data
 end
 
@@ -154,6 +152,10 @@ function LockSession:getCreatedTimestamp()
 	return self._value.createdAt
 end
 
+function LockSession:getLastWriteElapsedTime()
+	return getTime() - self._lastWrite
+end
+
 function LockSession:unlockWithFinalData(data)
 	self._pendingData = data
 
@@ -161,11 +163,11 @@ function LockSession:unlockWithFinalData(data)
 end
 
 function LockSession:unlock()
-	if getTime() - self._lastWrite < WRITE_MAX_INTERVAL or self._pendingPromise then
+	if getTime() - self._lastWrite < Constants.WRITE_MAX_INTERVAL or self._pendingPromise then
 		self._pendingClose = true
 
 		if self._pendingPromise == nil then
-			self._pendingPromise = Promise.delay(WRITE_MAX_INTERVAL - (getTime() - self._lastWrite)):andThen(function()
+			self._pendingPromise = Promise.delay(Constants.WRITE_MAX_INTERVAL - (getTime() - self._lastWrite)):andThen(function()
 				self._pendingPromise = nil
 				self:unlock()
 			end)

@@ -1,4 +1,4 @@
-local AUTOSAVE_INTERVAL = game:GetService("RunService"):IsStudio() and 30 or 5 * 60
+local Constants = require(script.Parent.QuicksaveConstants)
 
 local Promise = require(script.Parent.Promise)
 local OSModules = require(script.Parent.OSModules)
@@ -6,7 +6,6 @@ local AccessLayer = require(script.Parent.Layers.AccessLayer)
 local DocumentData = require(script.DocumentData)
 local Error = require(script.Parent.Error)
 local stackSkipAssert = require(script.Parent.stackSkipAssert).stackSkipAssert
-
 local validateValue = require(script.validateValue)
 
 local Document = {}
@@ -16,7 +15,6 @@ function Document.new(collection, name)
 	local document = setmetatable({
 		collection = collection,
 		name = name,
-		lastSaved = tick(),
 
 		saved = OSModules.Event(),
 		closed = OSModules.Event(),
@@ -24,6 +22,7 @@ function Document.new(collection, name)
 
 		_data = nil,
 		_isSaving = false,
+		_isClosed = false,
 	}, Document)
 
 	--[[
@@ -34,8 +33,8 @@ function Document.new(collection, name)
 		document = document:readyPromise():expect()
 
 		repeat
-			Promise.delay(AUTOSAVE_INTERVAL):andThenCall(function()
-				if document.isDirty() and tick() - document.lastSaved > AUTOSAVE_INTERVAL then
+			Promise.delay(Constants.AUTOSAVE_INTERVAL):andThenCall(function()
+				if document.isDirty() and document:getLastSaveElapsedTime() > Constants.AUTOSAVE_INTERVAL then
 					return document:save()
 				end
 			end):await()
@@ -86,7 +85,7 @@ function Document:get(key)
 end
 
 function Document:set(key, value)
-	stackSkipAssert(self._data.isClosed == false, "Attempt to call :set() on a closed Document")
+	stackSkipAssert(self._isClosed == false, "Attempt to call :set() on a closed Document")
 
 	key = tostring(key)
 
@@ -105,7 +104,9 @@ function Document:set(key, value)
 end
 
 function Document:save()
-	stackSkipAssert(self._data.isClosed == false, "Attempt to call :save() on a closed Document")
+	stackSkipAssert(self._isClosed == false, "Attempt to call :save() on a closed Document")
+	stackSkipAssert(Constants.ALLOW_CLEAN_SAVING or self._data.isDirty == true, "Attempt to call :save() on a clean Document")
+	stackSkipAssert(self._isSaving == false, "Attempt to call :save() on a saving Document")
 
 	self._isSaving = true
 
@@ -113,34 +114,41 @@ function Document:save()
 		self._data:save()
 		resolve()
 	end):finally(function(status)
-		self._isSaving = false
-		self.saved:Fire(status)
+		local isResolved = status == Promise.Status.Resolved
 
-		if status then
-			self.lastSaved = tick()
-		end
+		self._isSaving = false
+		self.saved:Fire(isResolved)
 	end)
 end
 
 function Document:close()
-	stackSkipAssert(self._data.isClosed == false, "Attempt to call :close() on a closed Document")
+	stackSkipAssert(self._isClosed == false, "Attempt to call :close() on a closed Document")
+	stackSkipAssert(self._isSaving == false, "Attempt to call :close() on a saving Document")
 
 	self._isSaving = true
+	self._isClosed = true
 
 	return Promise.new(function(resolve)
 		self._data:close()
 		resolve()
 	end):finally(function(status)
-		self.collection:_removeDocument(self.name)
-		self._isSaving = false
-		self.saved:Fire(status)
+		local isResolved = status == Promise.Status.Resolved
 
-		if status then
-			self.lastSaved = tick()
+		self._isSaving = false
+		self.saved:Fire(isResolved)
+
+		if isResolved then
+			self.collection:_removeDocument(self.name)
 		end
 
-		self.closed:Fire()
+		-- If closing failed reopen the document
+		self._isClosed = isResolved
+		self.closed:Fire(isResolved)
 	end)
+end
+
+function Document:getLastWrite()
+	return self._data:getLastSaveElapsedTime()
 end
 
 function Document:isLoaded()
@@ -148,7 +156,7 @@ function Document:isLoaded()
 end
 
 function Document:isClosed()
-	return self._data.isClosed
+	return self._isClosed
 end
 
 function Document:isDirty()

@@ -1,3 +1,5 @@
+local Constants = require(script.Parent.Parent.QuicksaveConstants)
+
 local DataStoreService = require(script.Parent.Parent.MockDataStoreService)
 
 local DataStoreLayer = {
@@ -6,7 +8,7 @@ local DataStoreLayer = {
 
 function DataStoreLayer._getDataStore(collectionName)
     if DataStoreLayer._dataStores[collectionName] == nil then
-        DataStoreLayer._dataStores[collectionName] = DataStoreService:GetDataStore(collectionName, "_package/eryn.io/quicksave")
+        DataStoreLayer._dataStores[collectionName] = DataStoreService:GetDataStore(collectionName, Constants.SCOPE)
     end
 
     return DataStoreLayer._dataStores[collectionName]

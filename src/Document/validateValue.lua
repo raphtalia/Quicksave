@@ -1,24 +1,4 @@
-local SUPPORTED_TYPES = {
-    "nil",
-    "string",
-    "boolean",
-    "number",
-    "table",
-
-    "Vector2",
-    "Vector3",
-    "CFrame",
-    "Color3",
-    "BrickColor",
-    "ColorSequence",
-    "ColorSequenceKeypoint",
-    "NumberRange",
-    "NumberSequence",
-    "NumberSequenceKeypoint",
-    "UDim",
-    "UDim2",
-    "EnumItem",
-}
+local SUPPORTED_TYPES = require(script.Parent.Parent.QuicksaveConstants).SUPPORTED_TYPES
 
 function validateValue(value)
     if type(value) == "table" then
