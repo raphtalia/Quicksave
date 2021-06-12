@@ -11,7 +11,6 @@ local DataLayer = {
 	schemes = {
 		["raw/1"] = RawSchemes["raw/1"],
 		["compressed/1"] = CompressedSchemes["compressed/1"],
-		["compressed/2"] = CompressedSchemes["compressed/2"],
 	}
 }
 
@@ -35,9 +34,7 @@ function DataLayer._pack(value)
 
 	local scheme = "raw/1"
 	if Constants.COMPRESSION_ENABLED then
-		if length > Constants.MINIMUM_COMPRESSION_LENGTH.High then
-			scheme = "compressed/2"
-		elseif length > Constants.MINIMUM_COMPRESSION_LENGTH.Standard then
+		if length > Constants.MINIMUM_LENGTH_TO_COMPRES.Standard then
 			scheme = "compressed/1"
 		end
 	end

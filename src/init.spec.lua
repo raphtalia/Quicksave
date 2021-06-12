@@ -163,7 +163,8 @@ return function()
 				-- otherwise budgets are enabled and this could throttle
 				local raw = MockDataStoreService:GetDataStore("playerData", "_package/eryn.io/quicksave"):GetAsync("large")
 
-				expect(#raw < 2000).to.equal(true)
+				expect(#raw.data < 2000).to.equal(true)
+				expect(raw.scheme == "compressed/1")
 			end
 
 			progressTime(7)

@@ -35,9 +35,8 @@ return {
 
     -- DataLayer
     COMPRESSION_ENABLED = true,
-    MINIMUM_COMPRESSION_LENGTH = {
+    MINIMUM_LENGTH_TO_COMPRES = {
         Standard = 1000,
-        High = 100000,
     },
 
     -- RetryLayer
