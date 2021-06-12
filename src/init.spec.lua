@@ -140,6 +140,7 @@ return function()
 
 		afterEach(function()
 			if not document:isClosed() then
+				progressTime(7)
 				document:close()
 			end
 		end)
@@ -221,6 +222,8 @@ return function()
 
 		it("should error when writing to a closed document", function()
 			document:set("foo", "bar")
+
+			progressTime(7)
 
 			document:close()
 
@@ -316,7 +319,7 @@ return function()
 			expect(isEmpty).to.be.equal(true)
 		end)
 
-		describe("Document", function()
+		describe("Serialization", function()
 			Quicksave.createCollection("jsonTests", {
 				schema = {
 					v1 = t.optional(t.Vector2);
@@ -343,19 +346,19 @@ return function()
 			end)
 
 			it("should deserialize data", function()
-				expect(typeof(document:get("v1"))).to.be.equal("Vector2")
-				expect(typeof(document:get("v2"))).to.be.equal("Vector3")
-				expect(typeof(document:get("v3"))).to.be.equal("CFrame")
-				expect(typeof(document:get("v4"))).to.be.equal("Color3")
-				expect(typeof(document:get("v5"))).to.be.equal("BrickColor")
-				expect(typeof(document:get("v6"))).to.be.equal("ColorSequence")
-				expect(typeof(document:get("v7"))).to.be.equal("ColorSequenceKeypoint")
-				expect(typeof(document:get("v8"))).to.be.equal("NumberRange")
-				expect(typeof(document:get("v9"))).to.be.equal("NumberSequence")
-				expect(typeof(document:get("v10"))).to.be.equal("NumberSequenceKeypoint")
-				expect(typeof(document:get("v11"))).to.be.equal("UDim")
-				expect(typeof(document:get("v12"))).to.be.equal("UDim2")
-				expect(typeof(document:get("v13"))).to.be.equal("EnumItem")
+				expect(document:get("v1")).to.be.equal(Vector2.new(1, 2))
+				expect(document:get("v2")).to.be.equal(Vector3.new(1, 2, 3))
+				expect(document:get("v3")).to.be.equal(CFrame.new(1, 2, 3))
+				expect(document:get("v4")).to.be.equal(Color3.new(1, 1, 1))
+				expect(document:get("v5")).to.be.equal(BrickColor.new("Bright red"))
+				expect(document:get("v6")).to.be.equal(ColorSequence.new(Color3.new()))
+				expect(document:get("v7")).to.be.equal(ColorSequenceKeypoint.new(0, Color3.new(1, 0, 0)))
+				expect(document:get("v8")).to.be.equal(NumberRange.new(10))
+				expect(document:get("v9")).to.be.equal(NumberSequence.new(20))
+				expect(document:get("v10")).to.be.equal(NumberSequenceKeypoint.new(0, 1, 0.5))
+				expect(document:get("v11")).to.be.equal(UDim.new(1, 1))
+				expect(document:get("v12")).to.be.equal(UDim2.new(1, 0, 1, 0))
+				expect(document:get("v13")).to.be.equal(Enum.KeyCode.W)
 			end)
 
 			it("should be able to save, unlock, relock and load the same data", function()
