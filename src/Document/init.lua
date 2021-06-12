@@ -107,22 +107,28 @@ end
 function Document:save()
 	stackSkipAssert(self._data.isClosed == false, "Attempt to call :save() on a closed Document")
 
+	self._isSaving = true
+
 	return Promise.new(function(resolve)
 		self._data:save()
-		self.lastSaved = tick()
 		resolve()
 	end):finally(function(status)
 		self._isSaving = false
 		self.saved:Fire(status)
+
+		if status then
+			self.lastSaved = tick()
+		end
 	end)
 end
 
 function Document:close()
 	stackSkipAssert(self._data.isClosed == false, "Attempt to call :close() on a closed Document")
 
+	self._isSaving = true
+
 	return Promise.new(function(resolve)
 		self._data:close()
-		self.lastSaved = tick()
 		resolve()
 	end):finally(function(status)
 		self.collection:_removeDocument(self.name)
@@ -130,8 +136,10 @@ function Document:close()
 		self.saved:Fire(status)
 
 		if status then
-			self.closed:Fire()
+			self.lastSaved = tick()
 		end
+
+		self.closed:Fire()
 	end)
 end
 

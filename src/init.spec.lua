@@ -140,7 +140,6 @@ return function()
 
 		afterEach(function()
 			if not document:isClosed() then
-				print(document)
 				document:close()
 			end
 		end)
