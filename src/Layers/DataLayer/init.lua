@@ -1,6 +1,6 @@
 local Constants = require(script.Parent.Parent.QuicksaveConstants)
 
-local JSON = require(script.Parent.Parent.RbxUtils).JSON
+local JSON = require(script.Parent.Parent.JSON)
 
 local DataStores = require(script.Parent.DataStores)
 local Backups = require(script.Parent.Backups)

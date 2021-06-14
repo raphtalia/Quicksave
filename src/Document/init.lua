@@ -1,10 +1,10 @@
 local Constants = require(script.Parent.QuicksaveConstants)
 
 local Promise = require(script.Parent.Promise)
-local OSModules = require(script.Parent.OSModules)
 local AccessLayer = require(script.Parent.Layers.AccessLayer)
 local DocumentData = require(script.DocumentData)
 local Error = require(script.Parent.Error)
+local Signal = require(script.Parent.Signal)
 local accurateWait = require(script.Parent.accurateWait)
 local stackSkipAssert = require(script.Parent.stackSkipAssert).stackSkipAssert
 local validateValue = require(script.validateValue)
@@ -17,9 +17,9 @@ function Document.new(collection, name)
 		collection = collection,
 		name = name,
 
-		saved = OSModules.Event(),
-		closed = OSModules.Event(),
-		changed = OSModules.Event(),
+		saved = Signal.new(),
+		closed = Signal.new(),
+		changed = Signal.new(),
 
 		_data = nil,
 		_isSaving = false,

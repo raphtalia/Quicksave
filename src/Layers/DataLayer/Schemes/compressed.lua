@@ -1,12 +1,12 @@
-local Codecs = require(script.Parent.Parent.Parent.Parent.RbxUtils).Codecs
+local LZW = require(script.Parent.Parent.LZW)
 
 return {
 	["compressed/1"] = {
 		pack = function(value)
-			return Codecs.LZW.compress(value)
+			return LZW.compress(value)
 		end,
 		unpack = function(value)
-			return Codecs.LZW.decompress(value);
+			return LZW.decompress(value);
 		end,
 	}
 }

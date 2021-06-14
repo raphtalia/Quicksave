@@ -11,12 +11,6 @@
 		},
 		"MockDataStoreService": {
 			"$path": "./modules/MockDataStoreService/lib"
-		},
-		"RbxUtils": {
-			"$path": "./modules/RbxUtils"
-		},
-		"OSModules": {
-			"$path": "./modules/Opensource-Modules/src"
 		}
 	}
 }

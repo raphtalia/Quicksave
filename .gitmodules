@@ -10,9 +10,3 @@
 [submodule "modules/t"]
 	path = modules/t
 	url = https://github.com/osyrisrblx/t
-[submodule "modules/RbxUtils"]
-	path = modules/RbxUtils
-	url = https://github.com/raphtalia/RbxUtils
-[submodule "modules/Opensource-Modules"]
-	path = modules/Opensource-Modules
-	url = https://github.com/Rythian2277/Opensource-Modules
