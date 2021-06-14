@@ -43,8 +43,10 @@ function MigrationLayer.update(collection, key, callback, migrations)
 	return migrated
 end
 
+--[[
 function MigrationLayer.read(collection, key, migrations)
 	return MigrationLayer._unpack(DataLayer.read(collection, key), migrations)
 end
+]]
 
 return MigrationLayer

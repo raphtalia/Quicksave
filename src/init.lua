@@ -32,6 +32,9 @@ end
 game:BindToClose(function()
 	local promises = {}
 
+	-- Allow for backup requests to finish
+	table.insert(promises, Promise.delay(0.5))
+
 	for _,collection in pairs(Quicksave._collections) do
 		for _,document in pairs(collection:getActiveDocuments()) do
 			if document:isDirty() then

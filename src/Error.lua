@@ -4,9 +4,10 @@ local getTime = require(script.Parent.getTime).getTime
 local Error = {
 	Kind = makeEnum("Quicksave.Error.Kind", {
 		"DataStoreError",
+		"BackupError",
 		"CouldNotAcquireLock",
 		"LockConsistencyViolation",
-		"SchemaValidationFailed"
+		"SchemaValidationFailed",
 	}),
 }
 Error.__index = Error

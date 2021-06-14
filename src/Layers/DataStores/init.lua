@@ -1,14 +1,15 @@
 local Constants = require(script.Parent.Parent.QuicksaveConstants)
 
-local ThrottleLayer = require(script.Parent.ThrottleLayer)
+local ThrottleLayer = require(script.ThrottleLayer)
 local Error = require(script.Parent.Parent.Error)
 
-local RetryLayer = {}
+local DataStoresRetryLayer = {}
 
-function RetryLayer._retry(callback, ...)
+function DataStoresRetryLayer._retry(callback, ...)
 	local attempts = 0
 
-	while attempts < Constants.MAX_RETRIES do
+	local maxRetries = Constants.DATASTORES_MAX_RETRIES
+	while attempts < maxRetries do
 		attempts = attempts + 1
 
 		local ok, value = pcall(callback, ...)
@@ -17,7 +18,7 @@ function RetryLayer._retry(callback, ...)
 			return value
 		end
 
-		if attempts < Constants.MAX_RETRIES then
+		if attempts < maxRetries then
 			warn(("[Quicksave] DataStore operation failed. Retrying...\nError:\n%s"):format(
 				tostring(value)
 			))
@@ -25,23 +26,22 @@ function RetryLayer._retry(callback, ...)
 			error(Error.new({
 				kind = Error.Kind.DataStoreError,
 				error = value,
-				context = ("Failed after %d retries."):format(Constants.MAX_RETRIES)
+				context = ("Failed after %d retries."):format(maxRetries)
 			}))
 		end
 	end
-
 end
 
-function RetryLayer.update(...)
-	return RetryLayer._retry(function(...)
+function DataStoresRetryLayer.update(...)
+	return DataStoresRetryLayer._retry(function(...)
 		return ThrottleLayer.update(...)
 	end, ...)
 end
 
-function RetryLayer.read(...)
-	return RetryLayer._retry(function(...)
+function DataStoresRetryLayer.read(...)
+	return DataStoresRetryLayer._retry(function(...)
 		return ThrottleLayer.read(...)
 	end, ...)
 end
 
-return RetryLayer
+return DataStoresRetryLayer

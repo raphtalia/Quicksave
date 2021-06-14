@@ -1,6 +1,6 @@
-local Constants = require(script.Parent.Parent.QuicksaveConstants)
+local Constants = require(script.Parent.Parent.Parent.QuicksaveConstants)
 
-local DataStoreService = require(script.Parent.Parent.MockDataStoreService)
+local DataStoreService = require(script.Parent.Parent.Parent.MockDataStoreService)
 
 local DataStoreLayer = {
     _dataStores = {};
@@ -8,7 +8,7 @@ local DataStoreLayer = {
 
 function DataStoreLayer._getDataStore(collectionName)
     if DataStoreLayer._dataStores[collectionName] == nil then
-        DataStoreLayer._dataStores[collectionName] = DataStoreService:GetDataStore(collectionName, Constants.SCOPE)
+        DataStoreLayer._dataStores[collectionName] = DataStoreService:GetDataStore(collectionName, Constants.DATASTORE_SCOPE)
     end
 
     return DataStoreLayer._dataStores[collectionName]

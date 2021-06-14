@@ -1,12 +1,19 @@
 local IS_STUDIO = game:GetService("RunService"):IsStudio()
 
 return {
+    -- Quicksave
+    AUTO_CLOSE_DOCUMENTS = true,
+
+    -- Backups
+    MAX_BACKUP_REQUESTS = 300, -- Per minute
+
     -- Collection
     DOCUMENT_COOLDOWN = 7,
 
     -- Document
     ALLOW_CLEAN_SAVING = false,
-    AUTOSAVE_INTERVAL = IS_STUDIO and 30 or 5 * 60,
+    AUTOSAVE_ENABLED = true,
+    AUTOSAVE_INTERVAL = IS_STUDIO and 10 or 5 * 60,
     SUPPORTED_TYPES = {
         "nil",
         "string",
@@ -38,10 +45,12 @@ return {
     MINIMUM_LENGTH_TO_COMPRES = {
         Standard = 1000,
     },
+    BACKUP_HANDLER = nil,
 
     -- RetryLayer
-    MAX_RETRIES = 5,
+    DATASTORES_MAX_RETRIES = 5,
+    BACKUPS_MAX_RETRIES = 3,
 
     -- DataStoreLayer
-    SCOPE = "_package/eryn.io/quicksave",
+    DATASTORE_SCOPE = "_package/eryn.io/quicksave",
 }

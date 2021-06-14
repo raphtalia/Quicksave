@@ -42,9 +42,13 @@ function LockSession:lock()
 	local success
 
 	self._value = MigrationLayer.update(self.collection, self.key, function(value)
+		--[[
+			Initalized with an updatedAt time of -1 to ensure backup database
+			has more recent time
+		]]
 		value = value or {
 			createdAt = os.time();
-			updatedAt = os.time();
+			updatedAt = -1;
 		}
 
 		if type(value.lockedAt) == "number" and os.time() - value.lockedAt < Constants.LOCK_EXPIRE then
@@ -119,6 +123,7 @@ function LockSession:write(data)
 	local errorVal
 	self._value = MigrationLayer.update(self.collection, self.key, function(value)
 		if not self:_checkConsistency(value) then
+			print("FAILED CONSISTENCY CHECK")
 			errorVal = consistencyError()
 			return nil
 		end

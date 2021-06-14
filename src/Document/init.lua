@@ -5,6 +5,7 @@ local OSModules = require(script.Parent.OSModules)
 local AccessLayer = require(script.Parent.Layers.AccessLayer)
 local DocumentData = require(script.DocumentData)
 local Error = require(script.Parent.Error)
+local accurateWait = require(script.Parent.accurateWait)
 local stackSkipAssert = require(script.Parent.stackSkipAssert).stackSkipAssert
 local validateValue = require(script.validateValue)
 
@@ -25,21 +26,25 @@ function Document.new(collection, name)
 		_isClosed = false,
 	}, Document)
 
-	--[[
-		We start a separate thread on each document to add some randomness
-		to the timing to avoid ratelimits.
-	]]
-	Promise.delay(1):andThenCall(function()
-		document = document:readyPromise():expect()
+	if Constants.AUTOSAVE_ENABLED then
+		--[[
+			We start a separate thread on each document to add some randomness
+			to the timing to avoid ratelimits.
+		]]
+		Promise.delay(1):andThenCall(function()
+			document = document:readyPromise():expect()
 
-		repeat
-			Promise.delay(Constants.AUTOSAVE_INTERVAL):andThenCall(function()
-				if document.isDirty() and document:getLastSaveElapsedTime() > Constants.AUTOSAVE_INTERVAL then
+			repeat
+				accurateWait(Constants.AUTOSAVE_INTERVAL)
+				if document:isDirty()
+				and not document:isClosed()
+				and not document:isSaving()
+				and document:getLastSaveElapsedTime() > Constants.AUTOSAVE_INTERVAL then
 					return document:save()
 				end
-			end):await()
-		until document:isClosed()
-	end)
+			until document:isClosed()
+		end)
+	end
 
 	return document
 end
@@ -147,8 +152,8 @@ function Document:close()
 	end)
 end
 
-function Document:getLastWrite()
-	return self._data:getLastSaveElapsedTime()
+function Document:getLastSaveElapsedTime()
+	return self._data:getLastWriteElapsedTime()
 end
 
 function Document:isLoaded()

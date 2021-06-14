@@ -34,40 +34,40 @@ end
 
 local MockDataStoreService = require(script.Parent.MockDataStoreService)
 
-MockDataStoreService:ImportFromJSON([[
+MockDataStoreService:ImportFromJSON([=[
 	{
 		"DataStore":{
 			"migrationTests":{
 				"_package/eryn.io/quicksave":{
 					"migrationTest":{
-					"data":"{\"generation\":0,\"data\":{\"lockedAt\":1603680426,\"updatedAt\":1603680426,\"lockId\":\"{614A5286-A137-4598-A3EF-54825220DEDC}\",\"data\":{\"oldKey\":\"foobar\"},\"createdAt\":1603680426}}",
-					"scheme":"raw/1"
+						"data":"{\"generation\":0,\"data\":{\"lockedAt\":1603680426,\"updatedAt\":1603680426,\"lockId\":\"{614A5286-A137-4598-A3EF-54825220DEDC}\",\"data\":{\"oldKey\":\"foobar\"},\"createdAt\":1603680426}}",
+						"scheme":"raw/1"
 					}
 				}
 			},
 			"playerData":{
 				"_package/eryn.io/quicksave":{
 					"evaera":{
-					"data":"{\"generation\":1,\"data\":{\"lockedAt\":1603680426,\"updatedAt\":1603680426,\"lockId\":\"{614A5286-A137-4598-A3EF-54825220DEDC}\",\"data\":{\"foo\":\"bar\"},\"createdAt\":1603680426}}",
-					"scheme":"raw/1"
+						"data":"{\"generation\":1,\"data\":{\"lockedAt\":1603680426,\"updatedAt\":1603680426,\"lockId\":\"{614A5286-A137-4598-A3EF-54825220DEDC}\",\"data\":{\"foo\":\"bar\"},\"createdAt\":1603680426}}",
+						"scheme":"raw/1"
 					},
 					"locked":{
-					"data":"{\"generation\":1,\"data\":{\"lockedAt\":9999999999,\"updatedAt\":1603680426,\"lockId\":\"{614A5286-A137-4598-A3EF-54825220DEDC}\",\"data\":{\"foo\":\"bar\"},\"createdAt\":1603680426}}",
-					"scheme":"raw/1"
+						"data":"{\"generation\":1,\"data\":{\"lockedAt\":9999999999,\"updatedAt\":1603680426,\"lockId\":\"{614A5286-A137-4598-A3EF-54825220DEDC}\",\"data\":{\"foo\":\"bar\"},\"createdAt\":1603680426}}",
+						"scheme":"raw/1"
 					}
 				}
 			},
 			"jsonTests":{
 				"_package/eryn.io/quicksave":{
 					"jsonTest":{
-					"data":"{\"generation\":0,\"data\":{\"updatedAt\":1623375760,\"data\":{\"v9\":[\"_T\",9,[[\"_T\",10,0,20,0],[\"_T\",10,1,20,0] ] ],\"v13\":[\"_T\",13,\"KeyCode\",\"W\"],\"v12\":[\"_T\",12,1,0,1,0],\"v10\":[\"_T\",10,0,1,0.5],\"v4\":[\"_T\",4,16777215],\"v5\":[\"_T\",5,21],\"v3\":[\"_T\",3,1,2,3,1,0,0,0,1,0,0,0,1],\"v8\":[\"_T\",8,10,10],\"v6\":[\"_T\",6,[[\"_T\",7,0,0],[\"_T\",7,1,0] ] ],\"v2\":[\"_T\",2,1,2,3],\"v7\":[\"_T\",7,0,16711680],\"v1\":[\"_T\",1,1,2],\"v11\":[\"_T\",11,1,1]},\"createdAt\":1623375760}}",
-					"scheme":"raw/1"
+						"data":"{\"generation\":1,\"data\":{\"lockedAt\":1603680426,\"updatedAt\":1603680426,\"lockId\":\"{614A5286-A137-4598-A3EF-54825220DEDC}\",\"data\":{\"v9\":[\"_T\",9,[[\"_T\",10,0,20,0],[\"_T\",10,1,20,0]]],\"v13\":[\"_T\",13,\"KeyCode\",\"W\"],\"v12\":[\"_T\",12,1,0,1,0],\"v10\":[\"_T\",10,0,1,0.5],\"v4\":[\"_T\",4,16777215],\"v5\":[\"_T\",5,21],\"v3\":[\"_T\",3,1,2,3,1,0,0,0,1,0,0,0,1],\"v8\":[\"_T\",8,10,10],\"v6\":[\"_T\",6,[[\"_T\",7,0,0],[\"_T\",7,1,0]]],\"v2\":[\"_T\",2,1,2,3],\"v7\":[\"_T\",7,0,16711680],\"v1\":[\"_T\",1,1,2],\"v11\":[\"_T\",11,1,1]},\"createdAt\":1603680426}}",
+						"scheme":"raw/1"
 					}
 				}
 			}
 		}
 	}
-]])
+]=])
 
 return function()
 	warn("Running tests at", SUPER_SPEED and "super speed" or "regular speed")

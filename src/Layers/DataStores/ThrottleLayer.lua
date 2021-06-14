@@ -1,7 +1,8 @@
-local DataStoreService = require(script.Parent.Parent.MockDataStoreService)
-local Promise = require(script.Parent.Parent.Promise)
-local Error = require(script.Parent.Parent.Error)
 local RunService = game:GetService("RunService")
+
+local DataStoreService = require(script.Parent.Parent.Parent.MockDataStoreService)
+local Promise = require(script.Parent.Parent.Parent.Promise)
+local Error = require(script.Parent.Parent.Parent.Error)
 
 local DataStoreLayer = require(script.Parent.DataStoreLayer)
 
@@ -71,6 +72,7 @@ function ThrottleLayer.read(collection, key)
 	return ThrottleLayer._perform("GetAsync", collection, key)
 end
 
+--[[
 function ThrottleLayer.write(collection, key, value)
 	return ThrottleLayer._perform("SetAsync", collection, key, value)
 end
@@ -78,5 +80,6 @@ end
 function ThrottleLayer.remove(collection, key)
 	return ThrottleLayer._perform("RemoveAsync", collection, key)
 end
+]]
 
 return ThrottleLayer
