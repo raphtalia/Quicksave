@@ -47,6 +47,13 @@ Once a document has fully closed and become inactive, attempting to open the doc
 
 If you ever need to change the structure data in your schema, you can write a migration which can convert existing documents to the current schema. All migrations that ocurred between the current document and the present schema will be run in order.
 
+### Databases
+
+The primary database by default is DataStores. The secondary database is used for backups and must be configured. You can configure the primary and secondary databases to be switched
+in roles allowing an external database to be used as the primary and DataStores as the secondary.
+
+Backups are only used if the primary database is reachable and returns outdated or no data to avoid potentially overwriting data on the primary database.
+
 ## Internals
 
 Data flows through the library in this order:
@@ -54,10 +61,15 @@ Data flows through the library in this order:
 1. AccessLayer (Handles locks)
 2. MigrationLayer
 3. DataLayer (Handles compression)
-4. RetryLayer
-5. ThrottleLayer
-6. DataStoreLayer
-7. Roblox Datastores
+   1. Primary Database (DataStores)
+      1. RetryLayer
+      2. ThrottleLayer
+      3. DataStoreLayer
+      4. Roblox Datastores
+   2. Secondary Database (Optional)
+      1. RetryLayer
+      2. ThrottleLayer
+      3. BackupLayer (Must be configured)
 
 ## To do
 
