@@ -30,7 +30,7 @@ end
 function MigrationLayer.update(source, collection, key, callback, migrations)
 	local migrated
 
-	DataLayer.update(source, collection, key, function(value)
+	migrated = DataLayer.update(source, collection, key, function(value)
 		migrated = callback(MigrationLayer._unpack(value, migrations))
 
 		if migrated ~= nil then
@@ -38,7 +38,7 @@ function MigrationLayer.update(source, collection, key, callback, migrations)
 		else
 			return nil
 		end
-	end)
+	end).data
 
 	return migrated
 end

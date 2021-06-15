@@ -50,4 +50,9 @@ function DataStoresRetryLayer.write(...)
 	end, ...)
 end
 
+-- Allows DataStores to be used as secondary database with ease
+function DataStoresRetryLayer.isConfigured()
+	return true
+end
+
 return DataStoresRetryLayer

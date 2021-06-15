@@ -45,7 +45,8 @@ return {
     MINIMUM_LENGTH_TO_COMPRES = {
         Standard = 1000,
     },
-    SECONDARY_DATABASE_HANDLER = nil,
+    USE_EXTERNAL_DATABASE_AS_PRIMARY = false,
+    EXTERNAL_DATABASE_HANDLER = nil,
 
     -- RetryLayer
     DATASTORES_MAX_RETRIES = 5,

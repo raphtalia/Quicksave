@@ -9,7 +9,7 @@ DataStore abstraction library that offers:
 - Data compression
 - Automatic retry
 - Automatic throttling
-- Backups (NYI)
+- Backups
 - Promise-based API
 - Developer sanity
 
@@ -62,6 +62,4 @@ Data flows through the library in this order:
 ## To do
 
 - Write more tests. And more tests. And more tests.
-- Backups
 - Easy way to tie documents to players
-- Panic event (if too many datastore operations fail, fire this event)

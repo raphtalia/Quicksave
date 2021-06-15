@@ -22,7 +22,7 @@ end
 function ThrottleLayer._perform(methodName, collectionName, ...)
 	if getBudget() > 0 then
         useBudget(1)
-		return Constants.SECONDARY_DATABASE_HANDLER(methodName, collectionName, ...)
+		return Constants.EXTERNAL_DATABASE_HANDLER(methodName, collectionName, ...)
 	end
 
 	if ThrottleLayer._queue[methodName] == nil then
@@ -38,7 +38,7 @@ function ThrottleLayer._perform(methodName, collectionName, ...)
 				end
 
                 useBudget(1)
-				local ok, result = pcall(Constants.SECONDARY_DATABASE_HANDLER, unpack(request.args))
+				local ok, result = pcall(Constants.EXTERNAL_DATABASE_HANDLER, unpack(request.args))
 				if ok then
 					request.resolve(result)
 				else

@@ -4,11 +4,37 @@ local Events = require(script.Parent.Parent.QuicksaveEvents)
 local JSON = require(script.Parent.Parent.JSON)
 local DatabaseSource = require(script.Parent.Parent.DatabaseSource)
 
-local PrimaryDB = require(script.Parent.DataStores)
-local SecondaryDB = require(script.Parent.Backups)
-
 local RawSchemes = require(script.Schemes.raw)
 local CompressedSchemes = require(script.Schemes.compressed)
+
+local Databases = {
+	Primary = require(script.Parent.DataStores),
+	Secondary = require(script.Parent.Backups),
+}
+
+local function getPrimaryDatabase()
+	if Constants.USE_EXTERNAL_DATABASE_AS_PRIMARY then
+		if Databases.Secondary.isConfigured() then
+			return Databases.Secondary
+		else
+			return nil
+		end
+	else
+		return Databases.Primary
+	end
+end
+
+local function getSecondaryDatabase()
+	if Constants.USE_EXTERNAL_DATABASE_AS_PRIMARY then
+		return Databases.Primary
+	else
+		if Databases.Secondary.isConfigured() then
+			return Databases.Secondary
+		else
+			return nil
+		end
+	end
+end
 
 local DataLayer = {
 	schemes = {
@@ -49,41 +75,45 @@ function DataLayer._pack(value)
 end
 
 function DataLayer.update(source, collection, key, callback)
-	local isSecondaryDBConfigured = SecondaryDB.isConfigured()
+	local primaryDB = getPrimaryDatabase()
+	local secondaryDB = getSecondaryDatabase()
+
 	local primaryDecompressed, primarySavedAt
 	local secondaryDecompressed, secondarySavedAt
 
 	local primaryDatabaseSuccess, primaryDatabaseError
-	if source == DatabaseSource.All and isSecondaryDBConfigured then
-		primaryDatabaseSuccess, primaryDatabaseError = pcall(function()
-			local decompressed, savedAt = DataLayer._unpack(PrimaryDB.read(collection, key))
-			primaryDecompressed = callback(decompressed)
-			primarySavedAt = savedAt
-		end)
-	elseif source == DatabaseSource.Primary or not isSecondaryDBConfigured then
-		primaryDatabaseSuccess, primaryDatabaseError = pcall(PrimaryDB.update, collection, key, function(value)
-			primaryDecompressed = callback(DataLayer._unpack(value))
+	if primaryDB then
+		if source == DatabaseSource.All and secondaryDB then
+			primaryDatabaseSuccess, primaryDatabaseError = pcall(function()
+				local decompressed, savedAt = DataLayer._unpack(primaryDB.read(collection, key))
+				primaryDecompressed = callback(decompressed)
+				primarySavedAt = savedAt
+			end)
+		elseif source == DatabaseSource.Primary or not secondaryDB then
+			primaryDatabaseSuccess, primaryDatabaseError = pcall(primaryDB.update, collection, key, function(value)
+				primaryDecompressed = callback(DataLayer._unpack(value))
 
-			if primaryDecompressed ~= nil then
-				local compressed = DataLayer._pack(primaryDecompressed)
-				compressed.savedAt = os.time()
-				return compressed
-			else
-				return nil
-			end
-		end)
+				if primaryDecompressed ~= nil then
+					local compressed = DataLayer._pack(primaryDecompressed)
+					compressed.savedAt = os.time()
+					return compressed
+				else
+					return nil
+				end
+			end)
+		end
 	end
 
 	local secondaryDatabaseSuccess, secondaryDatabaseError
-	if isSecondaryDBConfigured then
-		if source == DatabaseSource.All then
+	if secondaryDB then
+		if source == DatabaseSource.All and primaryDB then
 			secondaryDatabaseSuccess, secondaryDatabaseError = pcall(function()
-				local decompressed, savedAt = DataLayer._unpack(SecondaryDB.read(collection, key))
+				local decompressed, savedAt = DataLayer._unpack(secondaryDB.read(collection, key))
 				secondaryDecompressed = callback(decompressed)
 				secondarySavedAt = savedAt
 			end)
-		elseif source == DatabaseSource.Secondary then
-			secondaryDatabaseSuccess, secondaryDatabaseError = pcall(SecondaryDB.update, collection, key, function(value)
+		elseif source == DatabaseSource.Secondary or not primaryDB then
+			secondaryDatabaseSuccess, secondaryDatabaseError = pcall(secondaryDB.update, collection, key, function(value)
 				secondaryDecompressed = callback(DataLayer._unpack(value))
 
 				if secondaryDecompressed ~= nil then
@@ -145,14 +175,14 @@ function DataLayer.update(source, collection, key, callback)
 	end
 
 	if decompressed then
-		if source == DatabaseSource.All and isSecondaryDBConfigured then
+		if source == DatabaseSource.All and secondaryDB then
 			local compressed = DataLayer._pack(decompressed)
 			compressed.savedAt = os.time()
 
-			pcall(PrimaryDB.write, collection, key, compressed)
+			pcall(primaryDB.write, collection, key, compressed)
 
 			if secondaryDecompressed then
-				pcall(SecondaryDB.write, collection, key, compressed)
+				pcall(secondaryDB.write, collection, key, compressed)
 			end
 		end
 

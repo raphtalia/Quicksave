@@ -51,7 +51,7 @@ function BackupsRetryLayer.write(...)
 end
 
 function BackupsRetryLayer.isConfigured()
-	return type(Constants.SECONDARY_DATABASE_HANDLER) == "function"
+	return type(Constants.EXTERNAL_DATABASE_HANDLER) == "function"
 end
 
 return BackupsRetryLayer
