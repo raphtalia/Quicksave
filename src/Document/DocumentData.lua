@@ -59,7 +59,9 @@ function DocumentData:save(source)
 	end
 
 	self._lockSession:write(self._currentData, source)
-	self.isDirty = false
+	if source == DatabaseSource.All or source == DatabaseSource.Primary then
+		self.isDirty = false
+	end
 end
 
 function DocumentData:close()
