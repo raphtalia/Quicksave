@@ -44,4 +44,10 @@ function DataStoresRetryLayer.read(...)
 	end, ...)
 end
 
+function DataStoresRetryLayer.write(...)
+	return DataStoresRetryLayer._retry(function(...)
+		return ThrottleLayer.write(...)
+	end, ...)
+end
+
 return DataStoresRetryLayer

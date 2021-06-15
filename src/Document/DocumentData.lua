@@ -1,3 +1,4 @@
+local DatabaseSource = require(script.Parent.Parent.DatabaseSource)
 local copyDeep = require(script.Parent.copyDeep)
 
 local DocumentData = {}
@@ -51,12 +52,13 @@ function DocumentData:write(value)
 	self.isDirty = true
 end
 
-function DocumentData:save()
+function DocumentData:save(source)
+	source = source or DatabaseSource.Primary
 	if self._lockSession == nil then
 		error("Can't save on a readonly DocumentData")
 	end
 
-	self._lockSession:write(self._currentData)
+	self._lockSession:write(self._currentData, source)
 	self.isDirty = false
 end
 

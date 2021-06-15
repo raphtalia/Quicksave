@@ -27,10 +27,10 @@ function MigrationLayer._pack(value, migrations)
 	}
 end
 
-function MigrationLayer.update(collection, key, callback, migrations)
+function MigrationLayer.update(source, collection, key, callback, migrations)
 	local migrated
 
-	DataLayer.update(collection, key, function(value)
+	DataLayer.update(source, collection, key, function(value)
 		migrated = callback(MigrationLayer._unpack(value, migrations))
 
 		if migrated ~= nil then

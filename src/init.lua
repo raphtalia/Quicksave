@@ -1,4 +1,5 @@
 local Constants = require(script.QuicksaveConstants)
+local Events = require(script.QuicksaveEvents)
 
 local t = require(script.t)
 local Promise = require(script.Promise)
@@ -16,6 +17,9 @@ local Quicksave = {
 	JSON = JSON,
 
 	_collections = {},
+
+	PrimaryDatabaseError = Events.PrimaryDatabaseError,
+	SecondaryDatabaseError = Events.SecondaryDatabaseError,
 }
 
 function Quicksave.createCollection(name, options)
@@ -41,23 +45,21 @@ game:BindToClose(function()
 			infinitely yield for some reason until terminated by the 30
 			second deadline.
 		]]
-		if Constants.BACKUP_HANDLER then
+		if Constants.SECONDARY_DATABASE_HANDLER then
 			table.insert(promises, Promise.promisify(accurateWait)(0.5))
 		end
 
 		for _,collection in pairs(Quicksave._collections) do
 			for _,document in pairs(collection:getActiveDocuments()) do
-				if document:isDirty() then
-					--[[
-						Check if the document has edits and if it is already in the
-						process of saving.
-					]]
-					if document:isSaving() then
-						table.insert(promises, Promise.fromEvent(document.saved))
-					else
-						if not document:isClosed() then
-							table.insert(promises, document:close())
-						end
+				--[[
+					Check if the document has edits and if it is already in the
+					process of saving.
+				]]
+				if document:isSaving() then
+					table.insert(promises, Promise.fromEvent(document.saved))
+				else
+					if not document:isClosed() then
+						table.insert(promises, document:close())
 					end
 				end
 			end

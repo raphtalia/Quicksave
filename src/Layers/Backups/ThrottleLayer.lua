@@ -22,7 +22,7 @@ end
 function ThrottleLayer._perform(methodName, collectionName, ...)
 	if getBudget() > 0 then
         useBudget(1)
-		return Constants.BACKUP_HANDLER(methodName, collectionName, ...)
+		return Constants.SECONDARY_DATABASE_HANDLER(methodName, collectionName, ...)
 	end
 
 	if ThrottleLayer._queue[methodName] == nil then
@@ -38,7 +38,7 @@ function ThrottleLayer._perform(methodName, collectionName, ...)
 				end
 
                 useBudget(1)
-				local ok, result = pcall(Constants.BACKUP_HANDLER, unpack(request.args))
+				local ok, result = pcall(Constants.SECONDARY_DATABASE_HANDLER, unpack(request.args))
 				if ok then
 					request.resolve(result)
 				else
@@ -73,11 +73,11 @@ function ThrottleLayer.read(collection, key)
 	return ThrottleLayer._perform("GetAsync", collection, key)
 end
 
---[[
 function ThrottleLayer.write(collection, key, value)
 	return ThrottleLayer._perform("SetAsync", collection, key, value)
 end
 
+--[[
 function ThrottleLayer.remove(collection, key)
 	return ThrottleLayer._perform("RemoveAsync", collection, key)
 end

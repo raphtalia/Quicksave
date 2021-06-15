@@ -44,8 +44,14 @@ function BackupsRetryLayer.read(...)
 	end, ...)
 end
 
-function BackupsRetryLayer.isBackupsEnabled()
-	return type(Constants.BACKUP_HANDLER) == "function"
+function BackupsRetryLayer.write(...)
+	return BackupsRetryLayer._retry(function(...)
+		return ThrottleLayer.write(...)
+	end, ...)
+end
+
+function BackupsRetryLayer.isConfigured()
+	return type(Constants.SECONDARY_DATABASE_HANDLER) == "function"
 end
 
 return BackupsRetryLayer

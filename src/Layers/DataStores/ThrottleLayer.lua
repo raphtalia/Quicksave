@@ -72,11 +72,11 @@ function ThrottleLayer.read(collection, key)
 	return ThrottleLayer._perform("GetAsync", collection, key)
 end
 
---[[
 function ThrottleLayer.write(collection, key, value)
 	return ThrottleLayer._perform("SetAsync", collection, key, value)
 end
 
+--[[
 function ThrottleLayer.remove(collection, key)
 	return ThrottleLayer._perform("RemoveAsync", collection, key)
 end

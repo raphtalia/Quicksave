@@ -1,6 +1,7 @@
 local Constants = require(script.Parent.Parent.Parent.QuicksaveConstants)
 
 local MigrationLayer = require(script.Parent.Parent.MigrationLayer)
+local DatabaseSource = require(script.Parent.Parent.Parent.DatabaseSource)
 local Error = require(script.Parent.Parent.Parent.Error)
 local Promise = require(script.Parent.Parent.Parent.Promise)
 local getTime = require(script.Parent.Parent.Parent.getTime).getTime
@@ -41,14 +42,14 @@ function LockSession:lock()
 
 	local success
 
-	self._value = MigrationLayer.update(self.collection, self.key, function(value)
+	self._value = MigrationLayer.update(DatabaseSource.All, self.collection, self.key, function(value)
 		--[[
 			Initalized with an updatedAt time of -1 to ensure backup database
 			has more recent time
 		]]
 		value = value or {
 			createdAt = os.time();
-			updatedAt = -1;
+			updatedAt = os.time();
 		}
 
 		if type(value.lockedAt) == "number" and os.time() - value.lockedAt < Constants.LOCK_EXPIRE then
@@ -67,6 +68,7 @@ function LockSession:lock()
 	if success and self._value.lockId == self._lockId then
 		self._locked = true
 		self._lastWrite = getTime()
+
 		return self
 	end
 
@@ -86,7 +88,7 @@ function LockSession:_ensureLocked()
 	end
 end
 
-function LockSession:write(data)
+function LockSession:write(data, source)
 	self:_ensureLocked()
 
 	if self._pendingClose then
@@ -96,7 +98,6 @@ function LockSession:write(data)
 	if data == nil then
 		warn("[Debug, remove for release] LockSession:write data is nil!")
 	end
-
 
 	if getTime() - self._lastWrite < Constants.WRITE_MAX_INTERVAL then
 		warn("Queueing key =", self.collection, self.key)
@@ -112,7 +113,7 @@ function LockSession:write(data)
 				else
 					local pendingData = self._pendingData
 					self._pendingData = nil
-					self:write(pendingData)
+					self:write(pendingData, source)
 				end
 			end)
 		end
@@ -121,9 +122,8 @@ function LockSession:write(data)
 	end
 
 	local errorVal
-	self._value = MigrationLayer.update(self.collection, self.key, function(value)
+	self._value = MigrationLayer.update(source, self.collection, self.key, function(value)
 		if not self:_checkConsistency(value) then
-			print("FAILED CONSISTENCY CHECK")
 			errorVal = consistencyError()
 			return nil
 		end
@@ -184,7 +184,7 @@ function LockSession:unlock()
 	self._locked = false
 	self._value = nil
 
-	MigrationLayer.update(self.collection, self.key, function(value)
+	MigrationLayer.update(DatabaseSource.All, self.collection, self.key, function(value)
 		if not self:_checkConsistency(value) then
 			return nil
 		end

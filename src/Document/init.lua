@@ -3,6 +3,7 @@ local Constants = require(script.Parent.QuicksaveConstants)
 local Promise = require(script.Parent.Promise)
 local AccessLayer = require(script.Parent.Layers.AccessLayer)
 local DocumentData = require(script.DocumentData)
+local DatabaseSource = require(script.Parent.DatabaseSource)
 local Error = require(script.Parent.Error)
 local Signal = require(script.Parent.Signal)
 local accurateWait = require(script.Parent.accurateWait)
@@ -116,7 +117,25 @@ function Document:save()
 	self._isSaving = true
 
 	return Promise.new(function(resolve)
-		self._data:save()
+		self._data:save(DatabaseSource.Primary)
+		resolve()
+	end):finally(function(status)
+		local isResolved = status == Promise.Status.Resolved
+
+		self._isSaving = false
+		self.saved:Fire(isResolved)
+	end)
+end
+
+function Document:backup()
+	stackSkipAssert(self._isClosed == false, "Attempt to call :backup() on a closed Document")
+	stackSkipAssert(self._isSaving == false, "Attempt to call :backup() on a saving Document")
+
+	self._isSaving = true
+
+	-- Can't call self:save() as :backup() allows clean saving
+	return Promise.new(function(resolve)
+		self._data:save(DatabaseSource.Secondary)
 		resolve()
 	end):finally(function(status)
 		local isResolved = status == Promise.Status.Resolved

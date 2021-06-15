@@ -1,9 +1,11 @@
 local Constants = require(script.Parent.Parent.QuicksaveConstants)
+local Events = require(script.Parent.Parent.QuicksaveEvents)
 
 local JSON = require(script.Parent.Parent.JSON)
+local DatabaseSource = require(script.Parent.Parent.DatabaseSource)
 
-local DataStores = require(script.Parent.DataStores)
-local Backups = require(script.Parent.Backups)
+local PrimaryDB = require(script.Parent.DataStores)
+local SecondaryDB = require(script.Parent.Backups)
 
 local RawSchemes = require(script.Schemes.raw)
 local CompressedSchemes = require(script.Schemes.compressed)
@@ -26,7 +28,7 @@ function DataLayer._unpack(value)
 		error(("Unknown scheme: %q"):format(scheme))
 	end
 
-	return JSON.deserialize(DataLayer.schemes[scheme].unpack(value.data))
+	return JSON.deserialize(DataLayer.schemes[scheme].unpack(value.data)), value.savedAt
 end
 
 function DataLayer._pack(value)
@@ -46,57 +48,118 @@ function DataLayer._pack(value)
 	}
 end
 
-function DataLayer.update(collection, key, callback)
-	local decompressed
+function DataLayer.update(source, collection, key, callback)
+	local isSecondaryDBConfigured = SecondaryDB.isConfigured()
+	local primaryDecompressed, primarySavedAt
+	local secondaryDecompressed, secondarySavedAt
 
-	-- Attempt to update from DataStores
-	pcall(DataStores.update, collection, key, function(value)
-		decompressed = callback(DataLayer._unpack(value))
+	local primaryDatabaseSuccess, primaryDatabaseError
+	if source == DatabaseSource.All then
+		primaryDatabaseSuccess, primaryDatabaseError = pcall(function()
+			local decompressed, savedAt = DataLayer._unpack(PrimaryDB.read(collection, key))
+			primaryDecompressed = callback(decompressed)
+			primarySavedAt = savedAt
+		end)
+	elseif source == DatabaseSource.Primary then
+		primaryDatabaseSuccess, primaryDatabaseError = pcall(PrimaryDB.update, collection, key, function(value)
+			primaryDecompressed = callback(DataLayer._unpack(value))
 
-		if decompressed ~= nil then
-			return DataLayer._pack(decompressed)
-		else
-			return nil
-		end
-	end)
-
-	-- Attempt to update from Backups
-	if Backups.isBackupsEnabled() then
-		pcall(Backups.update, collection, key, function(value)
-			local backupsDecompressed = callback(DataLayer._unpack(value))
-
-			if backupsDecompressed ~= nil then
-				if decompressed and backupsDecompressed.data.updatedAt > decompressed.data.updatedAt then
-					warn(("[Quicksave] Using backup of document %q from collection %q"):format(key, collection))
-					decompressed = backupsDecompressed
-					return DataLayer._pack(backupsDecompressed)
-				else
-					return DataLayer._pack(decompressed)
-				end
+			if primaryDecompressed ~= nil then
+				local compressed = DataLayer._pack(primaryDecompressed)
+				compressed.savedAt = os.time()
+				return compressed
 			else
-				-- There currently is no backup, copy data from DataStores
-				return DataLayer._pack(decompressed)
+				return nil
 			end
 		end)
 	end
 
-	--[[
-		Use the backup if DataStore request succeeds in returning a document
-		however the document is older than the backup. This is to avoid
-		overwriting potentially more recent data on the DataStore if an error
-		is thrown.
-	]]
-	--[[
-	local decompressed = dataStoresDecompressed
-	if dataStoresDecompressed and backupsDecompressed and backupsDecompressed.data.updatedAt > dataStoresDecompressed.data.updatedAt then
-		warn(("[Quicksave] Using backup of document %q from collection %q"):format(key, collection))
-		decompressed = backupsDecompressed
-	end
-	]]
+	local secondaryDatabaseSuccess, secondaryDatabaseError
+	if isSecondaryDBConfigured then
+		if source == DatabaseSource.All then
+			secondaryDatabaseSuccess, secondaryDatabaseError = pcall(function()
+				local decompressed, savedAt = DataLayer._unpack(SecondaryDB.read(collection, key))
+				secondaryDecompressed = callback(decompressed)
+				secondarySavedAt = savedAt
+			end)
+		elseif source == DatabaseSource.Secondary then
+			secondaryDatabaseSuccess, secondaryDatabaseError = pcall(SecondaryDB.update, collection, key, function(value)
+				secondaryDecompressed = callback(DataLayer._unpack(value))
 
-	if decompressed and decompressed.data and decompressed.data.data then
-		-- Deserializes Roblox types
-		decompressed.data.data = JSON.deserializeTypes(decompressed.data.data)
+				if secondaryDecompressed ~= nil then
+					local compressed = DataLayer._pack(secondaryDecompressed)
+					compressed.savedAt = os.time()
+					return compressed
+				else
+					return nil
+				end
+			end)
+		end
+	end
+
+	if primaryDatabaseSuccess == false then
+		Events.PrimaryDatabaseError:Fire(collection, key, primaryDatabaseError)
+	end
+	if secondaryDatabaseSuccess == false then
+		warn("[Quicksave] Secondary database is configured but could not be reached.")
+		Events.SecondaryDatabaseError:Fire(collection, key, secondaryDatabaseError)
+	end
+	if not primaryDecompressed and secondaryDecompressed then
+		error([[
+			[Quicksave] Secondary database returned data but primary database was not reachable.
+			Backup will not be used to avoid potentially overwriting primary database.
+		]])
+	end
+
+	--[[
+		When comparing data returned from separate databases the results from
+		the primary database are favored.
+
+		If the secondary database returns data with an older createdAt
+		timestamp this indicates the database was not reachable at the time and
+		DataStores lost data resulting in a new document to be crated, this is
+		an unlikely production scenario but is encountered in any offline
+		session through MockDataStores.
+
+		If the createdAt timestamps are the same the next property compared is
+		savedAt which is the time the data was written to the database. More
+		recent timestamps are favored.
+
+		If all properties are identical the backup is likely up-to-date with
+		the primary database and the primary database will be used.
+	]]
+	local decompressed = primaryDecompressed or secondaryDecompressed
+	if source == DatabaseSource.All and secondaryDecompressed then
+		if primaryDecompressed.data.createdAt > secondaryDecompressed.data.createdAt then
+			warn(("[Quicksave] Secondary database returned document %q from collection %q with an older creation date"):format(key, collection))
+			decompressed = secondaryDecompressed
+		else
+			if not primaryDecompressed.data.data and secondaryDecompressed.data.data then
+				warn(("[Quicksave] Primary database returned no data, using backup of document %q from collection %q"):format(key, collection))
+				decompressed = secondaryDecompressed
+			elseif primaryDecompressed.data.data and secondaryDecompressed.data.data and (primarySavedAt or math.huge) < (secondarySavedAt or -math.huge) then
+				warn(("[Quicksave] Primary database returned outdated data, using backup of document %q from collection %q"):format(key, collection))
+				decompressed = secondaryDecompressed
+			end
+		end
+	end
+
+	if decompressed then
+		if source == DatabaseSource.All then
+			local compressed = DataLayer._pack(decompressed)
+			compressed.savedAt = os.time()
+
+			pcall(PrimaryDB.write, collection, key, compressed)
+
+			if secondaryDecompressed then
+				pcall(SecondaryDB.write, collection, key, compressed)
+			end
+		end
+
+		if decompressed.data.data then
+			-- Deserializes Roblox types
+			decompressed.data.data = JSON.deserializeTypes(decompressed.data.data)
+		end
 	end
 
 	return decompressed
@@ -104,7 +167,7 @@ end
 
 --[[
 function DataLayer.read(collection, key)
-	return DataLayer._unpack(DataStores.read(collection, key))
+	return DataLayer._unpack(PrimaryDB.read(collection, key))
 end
 ]]
 
