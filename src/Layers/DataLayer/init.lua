@@ -54,13 +54,13 @@ function DataLayer.update(source, collection, key, callback)
 	local secondaryDecompressed, secondarySavedAt
 
 	local primaryDatabaseSuccess, primaryDatabaseError
-	if source == DatabaseSource.All then
+	if source == DatabaseSource.All and isSecondaryDBConfigured then
 		primaryDatabaseSuccess, primaryDatabaseError = pcall(function()
 			local decompressed, savedAt = DataLayer._unpack(PrimaryDB.read(collection, key))
 			primaryDecompressed = callback(decompressed)
 			primarySavedAt = savedAt
 		end)
-	elseif source == DatabaseSource.Primary then
+	elseif source == DatabaseSource.Primary or not isSecondaryDBConfigured then
 		primaryDatabaseSuccess, primaryDatabaseError = pcall(PrimaryDB.update, collection, key, function(value)
 			primaryDecompressed = callback(DataLayer._unpack(value))
 
@@ -145,7 +145,7 @@ function DataLayer.update(source, collection, key, callback)
 	end
 
 	if decompressed then
-		if source == DatabaseSource.All then
+		if source == DatabaseSource.All and isSecondaryDBConfigured then
 			local compressed = DataLayer._pack(decompressed)
 			compressed.savedAt = os.time()
 

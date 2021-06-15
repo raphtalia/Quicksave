@@ -35,7 +35,7 @@ end
 function Quicksave.getCollection(name)
 	return Quicksave._collections[name] or error(("Collection %q hasn't been created yet!"):format(name))
 end
-
+--[=[
 game:BindToClose(function()
 	if Constants.AUTO_CLOSE_DOCUMENTS then
 		local promises = {}
@@ -68,5 +68,6 @@ game:BindToClose(function()
 		Promise.all(promises):awaitStatus()
 	end
 end)
+--]=]
 
 return Quicksave
