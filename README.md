@@ -54,6 +54,8 @@ in roles allowing an external database to be used as the primary and DataStores 
 
 Backups are only used if the primary database is reachable and returns outdated or no data to avoid potentially overwriting data on the primary database.
 
+A backup server example can be found [here](https://github.com/raphtalia/QuicksaveSQLite3).
+
 ## Internals
 
 Data flows through the library in this order:
