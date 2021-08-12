@@ -4,8 +4,8 @@ return {
     -- Quicksave
     AUTO_CLOSE_DOCUMENTS = true,
 
-    -- Backups
-    MAX_BACKUP_REQUESTS = 300, -- Per minute
+    -- External
+    MAX_EXTERNAL_REQUESTS = 300, -- Per minute
 
     -- Collection
     DOCUMENT_COOLDOWN = 7,
@@ -50,7 +50,7 @@ return {
 
     -- RetryLayer
     DATASTORES_MAX_RETRIES = 5,
-    BACKUPS_MAX_RETRIES = 3,
+    EXTERNAL_MAX_RETRIES = 3,
 
     -- DataStoreLayer
     DATASTORE_SCOPE = "_package/eryn.io/quicksave",

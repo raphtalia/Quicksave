@@ -3,12 +3,12 @@ local Constants = require(script.Parent.Parent.QuicksaveConstants)
 local ThrottleLayer = require(script.ThrottleLayer)
 local Error = require(script.Parent.Parent.Error)
 
-local BackupsRetryLayer = {}
+local ExternalRetryLayer = {}
 
-function BackupsRetryLayer._retry(callback, ...)
+function ExternalRetryLayer._retry(callback, ...)
 	local attempts = 0
 
-    local maxRetries = Constants.BACKUPS_MAX_RETRIES
+    local maxRetries = Constants.EXTERNAL_MAX_RETRIES
 	while attempts < maxRetries do
 		attempts = attempts + 1
 
@@ -24,7 +24,7 @@ function BackupsRetryLayer._retry(callback, ...)
 			))
 		else
 			error(Error.new({
-				kind = Error.Kind.BackupError,
+				kind = Error.Kind.ExternalError,
 				error = value,
 				context = ("Failed after %d retries."):format(maxRetries)
 			}))
@@ -32,26 +32,26 @@ function BackupsRetryLayer._retry(callback, ...)
 	end
 end
 
-function BackupsRetryLayer.update(...)
-	return BackupsRetryLayer._retry(function(...)
+function ExternalRetryLayer.update(...)
+	return ExternalRetryLayer._retry(function(...)
 		return ThrottleLayer.update(...)
 	end, ...)
 end
 
-function BackupsRetryLayer.read(...)
-	return BackupsRetryLayer._retry(function(...)
+function ExternalRetryLayer.read(...)
+	return ExternalRetryLayer._retry(function(...)
 		return ThrottleLayer.read(...)
 	end, ...)
 end
 
-function BackupsRetryLayer.write(...)
-	return BackupsRetryLayer._retry(function(...)
+function ExternalRetryLayer.write(...)
+	return ExternalRetryLayer._retry(function(...)
 		return ThrottleLayer.write(...)
 	end, ...)
 end
 
-function BackupsRetryLayer.isConfigured()
+function ExternalRetryLayer.isConfigured()
 	return type(Constants.EXTERNAL_DATABASE_HANDLER) == "function"
 end
 
-return BackupsRetryLayer
+return ExternalRetryLayer

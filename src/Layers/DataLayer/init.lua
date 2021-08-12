@@ -9,7 +9,7 @@ local CompressedSchemes = require(script.Schemes.compressed)
 
 local Databases = {
 	Primary = require(script.Parent.DataStores),
-	Secondary = require(script.Parent.Backups),
+	Secondary = require(script.Parent.External),
 }
 
 local function getPrimaryDatabase()

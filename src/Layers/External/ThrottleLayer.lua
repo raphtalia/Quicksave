@@ -10,13 +10,13 @@ local ThrottleLayer = {
 	_queue = {},
 }
 
-local budget = Constants.MAX_BACKUP_REQUESTS
+local budget = Constants.MAX_EXTERNAL_REQUESTS
 local function getBudget()
-    return math.min(budget, Constants.MAX_BACKUP_REQUESTS)
+    return math.min(budget, Constants.MAX_EXTERNAL_REQUESTS)
 end
 
 local function useBudget(n)
-    budget = math.clamp(budget - (n or 1), 0, Constants.MAX_BACKUP_REQUESTS)
+    budget = math.clamp(budget - (n or 1), 0, Constants.MAX_EXTERNAL_REQUESTS)
 end
 
 function ThrottleLayer._perform(methodName, collectionName, ...)
@@ -43,7 +43,7 @@ function ThrottleLayer._perform(methodName, collectionName, ...)
 					request.resolve(result)
 				else
 					request.reject(Error.new({
-						kind = Error.Kind.BackupError,
+						kind = Error.Kind.ExternalError,
 						error = result
 					}))
 				end
@@ -86,7 +86,7 @@ end
 coroutine.wrap(function()
     while true do
         accurateWait(60)
-        budget = Constants.MAX_BACKUP_REQUESTS
+        budget = Constants.MAX_EXTERNAL_REQUESTS
     end
 end)()
 
