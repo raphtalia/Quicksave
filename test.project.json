@@ -8,14 +8,6 @@
 
 			"Quicksave": {
 				"$path": "."
-			}
-		},
-
-		"TestService": {
-			"$className": "TestService",
-
-			"$properties": {
-				"ExecuteWithStudioRun": true
 			},
 			"TestEZ": {
 				"$path": "./modules/testez/src"
