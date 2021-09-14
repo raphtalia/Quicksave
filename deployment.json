@@ -1,0 +1,9 @@
+{
+    "target": "7463431274",
+
+    "includeMetadata": true,
+
+    "files": [
+        { "path": "test.project.json" }
+    ]
+}

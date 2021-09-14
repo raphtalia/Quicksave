@@ -1,5 +1,6 @@
+local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
 
-require(script.Parent.TestEZ).TestBootstrap:run({
+require(RunService.TestEZ).TestBootstrap:run({
 	ServerStorage.Quicksave
 })

@@ -17,9 +17,6 @@
 			"$properties": {
 				"ExecuteWithStudioRun": true
 			},
-			"runTests": {
-				"$path": "./testRunner/runTests.server.lua"
-			},
 			"TestEZ": {
 				"$path": "./modules/testez/src"
 			}

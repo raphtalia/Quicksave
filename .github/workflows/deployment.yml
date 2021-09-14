@@ -1,0 +1,43 @@
+name: Deployment
+
+on: [push]
+
+jobs:
+  deployment:
+    name: Deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - uses: actions/checkout@v2
+        with:
+          repository: raphtalia/Forge
+          path: Forge
+
+      - uses: DamianReeves/write-file-action@v1.0
+        with:
+          path: foreman.toml
+          contents: |
+            [tools]
+            rojo = { source = "rojo-rbx/rojo", version = "7.0.0-alpha.4" }
+            remodel = { source = "rojo-rbx/remodel", version = "0.9.0" }
+          write-mode: overwrite
+
+      - uses: Roblox/setup-foreman@v1
+        with:
+          version: "^1.0.0"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Report tool versions
+        run: |
+          rojo --version
+          remodel --version
+
+      - name: Deploy
+        run: |
+          remodel run Forge/main.lua
+        env:
+          REMODEL_AUTH: ${{ secrets.ROBLOSECURITY }}
